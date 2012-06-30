@@ -103,8 +103,8 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	for i := 0; i < int(C.array_len(res.len))-1; i++ {
 		r.Data = append(r.Data,
 			C.GoBytes(
-			unsafe.Pointer(C.array_elem_char(res.data, C.int(i))),
-			C.array_elem_int(res.len, C.int(i))))
+				unsafe.Pointer(C.array_elem_char(res.data, C.int(i))),
+				C.array_elem_int(res.len, C.int(i))))
 	}
 	r.CanonName = C.GoString(res.canonname)
 	r.Rcode = int(res.rcode)
@@ -120,17 +120,44 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	return r, err
 }
 
+// AddTa wraps Unbound's ub_ctx_add_ta.
 func (u *Unbound) AddTa(ta string) error {
-	i:=C.ub_ctx_add_ta(u.ctx, C.CString(ta))
+	i := C.ub_ctx_add_ta(u.ctx, C.CString(ta))
 	return newError(int(i))
 }
 
+// AddTaFile wraps Unbound's ub_ctx_add_ta_file.
 func (u *Unbound) AddTaFile(fname string) error {
-	i:=C.ub_ctx_add_ta_file(u.ctx, C.CString(fname))
+	i := C.ub_ctx_add_ta_file(u.ctx, C.CString(fname))
 	return newError(int(i))
 }
 
+// AddTaFile wraps Unbound's ub_ctx_trustedkeys.
 func (u *Unbound) TrustedKeys(fname string) error {
-	i:=C.ub_ctx_trustedkeys(u.ctx, C.CString(fname))
+	i := C.ub_ctx_trustedkeys(u.ctx, C.CString(fname))
+	return newError(int(i))
+}
+
+// ZoneAdd wraps Unbound's ub_ctx_zone_add.
+func (u *Unbound) ZoneAdd(zone_name, zone_type string) error {
+	i := C.ub_ctx_zone_add(u.ctx, C.CString(zone_name), C.CString(zone_type))
+	return newError(int(i))
+}
+
+// ZoneRemove wraps Unbound's ub_ctx_zone_remove.
+func (u *Unbound) ZoneRemove(zone_name string) error {
+	i := C.ub_ctx_zone_remove(u.ctx, C.CString(zone_name))
+	return newError(int(i))
+}
+
+// DataAdd wraps Unbound's ub_ctx_data_add.
+func (u *Unbound) DataAdd(data string) error {
+	i := C.ub_ctx_data_add(u.ctx, C.CString(data))
+	return newError(int(i))
+}
+
+// DataRemove wraps Unbound's ub_ctx_data_remove.
+func (u *Unbound) DataRemove(data string) error {
+	i := C.ub_ctx_data_remove(u.ctx, C.CString(data))
 	return newError(int(i))
 }
