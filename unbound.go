@@ -129,6 +129,7 @@ func (u *Unbound) Hosts(fname string) error {
 func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) {
 	res := C.new_ub_result()
 	r := new(Result)
+	defer C.ub_resolve_free(res)
 	i := C.ub_resolve(u.ctx, C.CString(name), C.int(rrtype), C.int(rrclass), &res)
 	err := newError(int(i))
 	if err != nil {
@@ -154,8 +155,6 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Secure = res.secure == 1
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
-
-	C.ub_resolve_free(res)
 	return r, err
 }
 

@@ -11,6 +11,7 @@ import (
 
 func main() {
 	u := unbound.New()
+	defer u.Destroy()
 
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
 		fmt.Printf("error %s", err.Error())
@@ -44,5 +45,4 @@ func main() {
 			fmt.Printf("Result is insecure\n")
 		}
 	}
-	u.Destroy()
 }

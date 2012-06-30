@@ -11,6 +11,7 @@ import (
 
 func main() {
 	u := unbound.New()
+	defer u.Destroy()
 
 	err := u.ResolvConf("/etc/resolv.conf")
 	if err != nil {
@@ -30,5 +31,4 @@ func main() {
 		os.Exit(1)
 	}
 	fmt.Printf("%+v\n", r)
-	u.Destroy()
 }
