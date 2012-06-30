@@ -1,6 +1,6 @@
 package main
 
-// https://www.unbound.net/documentation/libunbound-tutorial-2.html
+// https://www.unbound.net/documentation/libunbound-tutorial-6.html
 
 import (
 	"dns"
@@ -12,14 +12,17 @@ import (
 func main() {
 	u := unbound.New()
 
-	err := u.ResolvConf("/etc/resolv.conf")
-	if err != nil {
+	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
 	}
 
-	err = u.Hosts("/etc/hosts")
-	if err != nil {
+	if err := u.Hosts("/etc/hosts"); err != nil {
+		fmt.Printf("error %s", err.Error())
+		os.Exit(1)
+	}
+
+	if err := u.AddTaFile("keys"); err != nil {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
 	}
@@ -29,5 +32,18 @@ func main() {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
 	}
-	fmt.Printf("%+v\n", r)
+
+	// show first result
+	if r.HaveData {
+		fmt.Printf("The address is %v\n", r.Data[0])
+		// show security status
+		if r.Secure {
+			fmt.Printf("Result is secure\n")
+		} else if r.Bogus {
+			fmt.Printf("Result is bogus: %s\n", r.WhyBogus)
+			fmt.Printf("Result is insecure\n")
+		}
+	}
+
+	u.Delete()
 }

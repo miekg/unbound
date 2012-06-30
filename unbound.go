@@ -73,6 +73,10 @@ func New() *Unbound {
 	return u
 }
 
+func (u *Unbound) Delete() {
+	C.ub_ctx_delete(u.ctx)
+}
+
 func (u *Unbound) ResolvConf(fname string) error {
 	i := C.ub_ctx_resolvconf(u.ctx, C.CString(fname))
 	return newError(int(i))
