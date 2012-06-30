@@ -44,6 +44,5 @@ func main() {
 			fmt.Printf("Result is insecure\n")
 		}
 	}
-
-	u.Delete()
+	u.Destroy()
 }

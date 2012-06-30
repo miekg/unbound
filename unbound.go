@@ -1,3 +1,9 @@
+// See libunbound(3) for the documentation.
+// The names of the methods is in sync with the
+// names used in unbound, except for ub_ctx_create() and ub_ctx_delete(),
+// which becomes: New() and Destroy().
+//
+// TODO(mg): free the C string somewhere
 package unbound
 
 /*
@@ -75,14 +81,41 @@ func New() *Unbound {
 	return u
 }
 
-// Delete wraps Unbound's ub_ctx_delete.
-func (u *Unbound) Delete() {
+// Destroy wraps Unbound's ub_ctx_delete.
+func (u *Unbound) Destroy() {
 	C.ub_ctx_delete(u.ctx)
 }
 
 // ResolvConf wraps Unbound's ub_ctx_resolvconf.
 func (u *Unbound) ResolvConf(fname string) error {
 	i := C.ub_ctx_resolvconf(u.ctx, C.CString(fname))
+	return newError(int(i))
+}
+
+// SetOption wraps Unbound's ub_ctx_set_option.
+func (u *Unbound) SetOption(opt, val string) error {
+	i := C.ub_ctx_set_option(u.ctx, C.CString(opt), C.CString(val))
+	return newError(int(i))
+}
+
+/* 
+// GetOption wraps Unbound's ub_ctx_get_option.
+func (u *Unbound) GetOption(fname string) (string, error) {
+	i := C.ub_ctx_get_option(u.ctx, C.CString(fname))
+	return newError(int(i))
+}
+TODO(mg): fix return value
+*/
+
+// Config wraps Unbound's ub_ctx_config.
+func (u *Unbound) Config(fname string) error {
+	i := C.ub_ctx_config(u.ctx, C.CString(fname))
+	return newError(int(i))
+}
+
+// SetFwd wraps Unbound's ub_ctx_set_fwd.
+func (u *Unbound) SetFwd(addr string) error {
+	i := C.ub_ctx_set_fwd(u.ctx, C.CString(addr))
 	return newError(int(i))
 }
 
