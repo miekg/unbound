@@ -125,3 +125,8 @@ func (u *Unbound) AddTaFile(fname string) error {
 	i:=C.ub_ctx_add_ta_file(u.ctx, C.CString(fname))
 	return newError(int(i))
 }
+
+func (u *Unbound) TrustedKeys(fname string) error {
+	i:=C.ub_ctx_trustedkeys(u.ctx, C.CString(fname))
+	return newError(int(i))
+}
