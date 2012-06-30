@@ -7,36 +7,41 @@ package unbound
 
 typedef struct ub_ctx ctx;
 
+int array_len(int *l) { return sizeof(l)/sizeof(int); }
+int array_elem_int(int *l, int i)       { return l[i]; }
+char * array_elem_char(char **l, int i) { return l[i]; }
+
 struct ub_result *new_ub_result() {
 	struct ub_result *r;
 	r = calloc(sizeof(struct ub_result), 1);
 	return r;
 }
-
 */
 import "C"
 
-import "dns"
+import (
+	"github.com/miekg/dns"
+	"unsafe"
+)
 
 type Unbound struct {
 	ctx *C.ctx
 }
 
+// ub_result adapted to Go.
 type Result struct {
-	Qname  string   // text string, original question
-	Qtype  uint16      // type code asked for
-	Qclass uint16      // class code asked for 
-	Data   []string // array of rdata items, NULL terminated
-	// Not needed                 int* len;    /* array with lengths of rdata items
+	Qname        string   // text string, original question
+	Qtype        uint16   // type code asked for
+	Qclass       uint16   // class code asked for 
+	Data         [][]byte // slice of rdata items,
 	CanonName    string   // canonical name of result
 	Rcode        int      // additional error code in case of no data
 	AnswerPacket *dns.Msg // full network format answer packet
-	// Not needed                 int answer_len; // length of packet in octets
-	HaveData bool   // true if there is data
-	NxDomain bool   // true if nodata because name does not exist
-	Secure   bool   // true if result is secure
-	Bogus    bool   // true if a security failure happened
-	WhyBogus string // string with error if bogus
+	HaveData     bool     // true if there is data
+	NxDomain     bool     // true if nodata because name does not exist
+	Secure       bool     // true if result is secure
+	Bogus        bool     // true if a security failure happened
+	WhyBogus     string   // string with error if bogus
 }
 
 type UnboundError struct {
@@ -45,7 +50,6 @@ type UnboundError struct {
 }
 
 func (e *UnboundError) Error() string {
-	// Also Code here?
 	return e.Err
 }
 
@@ -74,21 +78,34 @@ func (u *Unbound) ResolvConf(fname string) error {
 	return newError(int(i))
 }
 
+func (u *Unbound) Hosts(fname string) error {
+	i := C.ub_ctx_hosts(u.ctx, C.CString(fname))
+	return newError(int(i))
+}
+
 func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) {
 	res := C.new_ub_result()
 	r := new(Result)
 	i := C.ub_resolve(u.ctx, C.CString(name), C.int(rrtype), C.int(rrclass), &res)
 	err := newError(int(i))
+	if err != nil {
+		return nil, err
+	}
 
-	// Copy the data from res to Result for easy dismembering in Go
 	r.Qname = C.GoString(res.qname)
-	r.Qtype = uint16(res.qtype)		// Create full blown RR?
+	r.Qtype = uint16(res.qtype)
 	r.Qclass = uint16(res.qclass)
-	// res.data to ...			// And incorperate these...?
+	r.Data = make([][]byte, 0)
+	for i := 0; i < int(C.array_len(res.len))-1; i++ {
+		r.Data = append(r.Data,
+			C.GoBytes(
+			unsafe.Pointer(C.array_elem_char(res.data, C.int(i))),
+			C.array_elem_int(res.len, C.int(i))))
+	}
 	r.CanonName = C.GoString(res.canonname)
 	r.Rcode = int(res.rcode)
 	r.AnswerPacket = new(dns.Msg)
-	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len))	// return code??
+	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len)) // TODO(mg): return code
 	r.HaveData = res.havedata == 1
 	r.NxDomain = res.nxdomain == 1
 	r.Secure = res.secure == 1
@@ -96,6 +113,15 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.WhyBogus = C.GoString(res.why_bogus)
 
 	C.ub_resolve_free(res)
-
 	return r, err
+}
+
+func (u *Unbound) AddTa(ta string) error {
+	i:=C.ub_ctx_add_ta(u.ctx, C.CString(ta))
+	return newError(int(i))
+}
+
+func (u *Unbound) AddTaFile(fname string) error {
+	i:=C.ub_ctx_add_ta_file(u.ctx, C.CString(fname))
+	return newError(int(i))
 }
