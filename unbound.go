@@ -2,8 +2,6 @@
 // The names of the methods is in sync with the
 // names used in unbound, except for ub_ctx_create() and ub_ctx_delete(),
 // which becomes: New() and Destroy().
-//
-// TODO(mg): free the C string somewhere
 package unbound
 
 /*
