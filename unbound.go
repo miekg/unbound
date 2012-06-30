@@ -7,7 +7,7 @@ package unbound
 
 typedef struct ub_ctx ctx;
 
-int array_len(int *l) { return sizeof(l)/sizeof(int); }
+int array_len(int *l)			{ return sizeof(l)/sizeof(int); }
 int array_elem_int(int *l, int i)       { return l[i]; }
 char * array_elem_char(char **l, int i) { return l[i]; }
 
@@ -28,7 +28,7 @@ type Unbound struct {
 	ctx *C.ctx
 }
 
-// ub_result adapted to Go.
+// Results is Unbound's ub_result adapted for Go.
 type Result struct {
 	Qname        string   // text string, original question
 	Qtype        uint16   // type code asked for
@@ -44,9 +44,10 @@ type Result struct {
 	WhyBogus     string   // string with error if bogus
 }
 
+// UnboundError is an error returned from Unbound
 type UnboundError struct {
 	Err  string
-	Code int // Internal unbound error code
+	code int
 }
 
 func (e *UnboundError) Error() string {
@@ -59,7 +60,7 @@ func newError(i int) error {
 	}
 	e := new(UnboundError)
 	e.Err = errorString(i)
-	e.Code = i
+	e.code = i
 	return e
 }
 
@@ -67,26 +68,31 @@ func errorString(i int) string {
 	return C.GoString(C.ub_strerror(C.int(i)))
 }
 
+// New wraps Unbound's ub_ctx_create.
 func New() *Unbound {
 	u := new(Unbound)
 	u.ctx = C.ub_ctx_create()
 	return u
 }
 
+// Delete wraps Unbound's ub_ctx_delete.
 func (u *Unbound) Delete() {
 	C.ub_ctx_delete(u.ctx)
 }
 
+// ResolvConf wraps Unbound's ub_ctx_resolvconf.
 func (u *Unbound) ResolvConf(fname string) error {
 	i := C.ub_ctx_resolvconf(u.ctx, C.CString(fname))
 	return newError(int(i))
 }
 
+// Hosts wraps Unbound's ub_ctx_hosts.
 func (u *Unbound) Hosts(fname string) error {
 	i := C.ub_ctx_hosts(u.ctx, C.CString(fname))
 	return newError(int(i))
 }
 
+// Resolve wraps Unbound's ub_resolve.
 func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) {
 	res := C.new_ub_result()
 	r := new(Result)
