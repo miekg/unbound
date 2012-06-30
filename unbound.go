@@ -25,6 +25,7 @@ import "C"
 
 import (
 	"github.com/miekg/dns"
+	"io"
 	"unsafe"
 )
 
@@ -200,5 +201,16 @@ func (u *Unbound) DataAdd(data string) error {
 // DataRemove wraps Unbound's ub_ctx_data_remove.
 func (u *Unbound) DataRemove(data string) error {
 	i := C.ub_ctx_data_remove(u.ctx, C.CString(data))
+	return newError(int(i))
+}
+
+// A no-op
+func (u *Unbound) DebugOut(out io.Reader) error {
+	i := 0
+	return newError(int(i))
+}
+
+func (u *Unbound) DebugLevel(d int) error {
+	i := C.ub_ctx_debuglevel(u.ctx, C.int(d))
 	return newError(int(i))
 }
