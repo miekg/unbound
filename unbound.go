@@ -159,6 +159,11 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	return r, err
 }
 
+//// ResolveAsync wraps Unbound's ub_resolve_async
+//func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, mydata unsafe.Pointer, callback func(unsafe.Pointer, int, *Result), id *int) {
+//
+//}
+
 // AddTa wraps Unbound's ub_ctx_add_ta.
 func (u *Unbound) AddTa(ta string) error {
 	i := C.ub_ctx_add_ta(u.ctx, C.CString(ta))
