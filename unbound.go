@@ -4,8 +4,8 @@
 //
 // The method's documentation can be found in libunbound(3).
 // The names of the methods are in sync with the
-// names used in unbound, but the underscored are removed and they
-// are in camelcase, e.g. ub_ctx_resolv_conf becomes u.ResolvConf.
+// names used in unbound, but the underscores are removed and they
+// are in camel-case, e.g. ub_ctx_resolv_conf becomes u.ResolvConf.
 // Except for ub_ctx_create() and ub_ctx_delete(),
 // which beome: New() and Destroy().
 //
@@ -36,7 +36,7 @@ import "C"
 
 import (
 	"github.com/miekg/dns"
-	"io"
+	"os"
 	"unsafe"
 )
 
@@ -99,40 +99,53 @@ func (u *Unbound) Destroy() {
 
 // ResolvConf wraps Unbound's ub_ctx_resolvconf.
 func (u *Unbound) ResolvConf(fname string) error {
-	i := C.ub_ctx_resolvconf(u.ctx, C.CString(fname))
+	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
+	i := C.ub_ctx_resolvconf(u.ctx, cfname)
 	return newError(int(i))
 }
 
 // SetOption wraps Unbound's ub_ctx_set_option.
 func (u *Unbound) SetOption(opt, val string) error {
-	i := C.ub_ctx_set_option(u.ctx, C.CString(opt), C.CString(val))
+	copt := C.CString(opt)
+	defer C.free(unsafe.Pointer(copt))
+	cval := C.CString(val)
+	defer C.free(unsafe.Pointer(cval))
+	i := C.ub_ctx_set_option(u.ctx, copt, cval)
 	return newError(int(i))
 }
 
-/* 
 // GetOption wraps Unbound's ub_ctx_get_option.
-func (u *Unbound) GetOption(fname string) (string, error) {
-	i := C.ub_ctx_get_option(u.ctx, C.CString(fname))
-	return newError(int(i))
+func (u *Unbound) GetOption(opt string) (string, error) {
+	val := ""
+	cval := C.CString(val)
+	defer C.free(unsafe.Pointer(cval))
+	i := C.ub_ctx_get_option(u.ctx, C.CString(opt), &cval)
+	// Not sure if this works...?
+	return val, newError(int(i))
 }
-TODO(mg): fix return value
-*/
 
 // Config wraps Unbound's ub_ctx_config.
 func (u *Unbound) Config(fname string) error {
-	i := C.ub_ctx_config(u.ctx, C.CString(fname))
+	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
+	i := C.ub_ctx_config(u.ctx, cfname)
 	return newError(int(i))
 }
 
 // SetFwd wraps Unbound's ub_ctx_set_fwd.
 func (u *Unbound) SetFwd(addr string) error {
-	i := C.ub_ctx_set_fwd(u.ctx, C.CString(addr))
+	caddr := C.CString(addr)
+	defer C.free(unsafe.Pointer(caddr))
+	i := C.ub_ctx_set_fwd(u.ctx, caddr)
 	return newError(int(i))
 }
 
 // Hosts wraps Unbound's ub_ctx_hosts.
 func (u *Unbound) Hosts(fname string) error {
-	i := C.ub_ctx_hosts(u.ctx, C.CString(fname))
+	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
+	i := C.ub_ctx_hosts(u.ctx, cfname)
 	return newError(int(i))
 }
 
@@ -169,55 +182,79 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	return r, err
 }
 
-//// ResolveAsync wraps Unbound's ub_resolve_async
-//func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, mydata unsafe.Pointer, callback func(unsafe.Pointer, int, *Result), id *int) {
-//
-//}
+// ResolveAsync does *not* wrap the Unbound function, instead
+// it utilizes Go's goroutines to mimic the async behavoir Unbound
+// implements. As a result the function signature is different.
+// The function f is called after the resolution is finished.
+// Also the ub_cancel, ub_wait_, ub_fd? are not implemented.
+func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, m interface{}, f func(interface{}, error, *Result)) error {
+	go func(){
+		r, e := u.Resolve(name, rrtype, rrclass)
+		f(m, e, r)
+	}()
+	return newError(0)
+}
 
 // AddTa wraps Unbound's ub_ctx_add_ta.
 func (u *Unbound) AddTa(ta string) error {
-	i := C.ub_ctx_add_ta(u.ctx, C.CString(ta))
+	cta := C.CString(ta)
+	i := C.ub_ctx_add_ta(u.ctx, cta)
 	return newError(int(i))
 }
 
 // AddTaFile wraps Unbound's ub_ctx_add_ta_file.
 func (u *Unbound) AddTaFile(fname string) error {
-	i := C.ub_ctx_add_ta_file(u.ctx, C.CString(fname))
+	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
+	i := C.ub_ctx_add_ta_file(u.ctx, cfname)
 	return newError(int(i))
 }
 
 // AddTaFile wraps Unbound's ub_ctx_trustedkeys.
 func (u *Unbound) TrustedKeys(fname string) error {
-	i := C.ub_ctx_trustedkeys(u.ctx, C.CString(fname))
+	cfname := C.CString(fname)
+	defer C.free(unsafe.Pointer(cfname))
+	i := C.ub_ctx_trustedkeys(u.ctx, cfname)
 	return newError(int(i))
 }
 
 // ZoneAdd wraps Unbound's ub_ctx_zone_add.
 func (u *Unbound) ZoneAdd(zone_name, zone_type string) error {
-	i := C.ub_ctx_zone_add(u.ctx, C.CString(zone_name), C.CString(zone_type))
+	czone_name := C.CString(zone_name)
+	defer C.free(unsafe.Pointer(czone_name))
+	czone_type := C.CString(zone_type)
+	defer C.free(unsafe.Pointer(czone_type))
+	i := C.ub_ctx_zone_add(u.ctx, czone_name, czone_type)
 	return newError(int(i))
 }
 
 // ZoneRemove wraps Unbound's ub_ctx_zone_remove.
 func (u *Unbound) ZoneRemove(zone_name string) error {
-	i := C.ub_ctx_zone_remove(u.ctx, C.CString(zone_name))
+	czone_name := C.CString(zone_name)
+	defer C.free(unsafe.Pointer(czone_name))
+	i := C.ub_ctx_zone_remove(u.ctx, czone_name)
 	return newError(int(i))
 }
 
 // DataAdd wraps Unbound's ub_ctx_data_add.
 func (u *Unbound) DataAdd(data string) error {
-	i := C.ub_ctx_data_add(u.ctx, C.CString(data))
+	cdata := C.CString(data)
+	defer C.free(unsafe.Pointer(cdata))
+	i := C.ub_ctx_data_add(u.ctx, cdata)
 	return newError(int(i))
 }
 
 // DataRemove wraps Unbound's ub_ctx_data_remove.
 func (u *Unbound) DataRemove(data string) error {
-	i := C.ub_ctx_data_remove(u.ctx, C.CString(data))
+	cdata := C.CString(data)
+	defer C.free(unsafe.Pointer(cdata))
+	i := C.ub_ctx_data_remove(u.ctx, cdata)
 	return newError(int(i))
 }
 
-// A no-op
-func (u *Unbound) DebugOut(out io.Reader) error {
+// DebugOut wraps Unbound's ub_ctx_debugout
+func (u *Unbound) DebugOut(out *os.File) error {
+	// TODO(mg): How to converto os.File to *FILE?
 	i := 0
 	return newError(int(i))
 }

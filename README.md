@@ -2,8 +2,7 @@
 
 A wrapper for Unbound in Go.
 
-As `cgo` does not support function callbacks (calling a Go function from within
-the C library) I'm still pondering how to implement the `*_async` function
-defined in `libunbound`.
+Unbound's asynchronous behavior is mimicked by using goroutines, *not* by
+calling `ub_resolve_async`.
 
 The website for Unbound is https://unbound.net/, were you can find further documentation.
