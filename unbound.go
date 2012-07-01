@@ -165,6 +165,8 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Qclass = uint16(res.qclass)
 	r.Data = make([][]byte, 0)
 	for i := 0; i < int(C.array_len(res.len))-1; i++ {
+		println("i", i)
+		println("len", int(C.array_len(res.len))-1)
 		r.Data = append(r.Data,
 			C.GoBytes(
 				unsafe.Pointer(C.array_elem_char(res.data, C.int(i))),
