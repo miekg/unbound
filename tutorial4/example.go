@@ -30,18 +30,18 @@ func main() {
 	done := 0
 
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
-		fmt.Printf("error %s", err.Error())
+		fmt.Printf("error %s\n", err.Error())
 		os.Exit(1)
 	}
 
 	if err := u.Hosts("/etc/hosts"); err != nil {
-		fmt.Printf("error %s", err.Error())
+		fmt.Printf("error %s\n", err.Error())
 		os.Exit(1)
 	}
 
 	err := u.ResolveAsync("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET, &done, mycallback)
 	if err != nil { // Will not happen in Go's case, as the return code is always nil
-		fmt.Printf("error %s", err.Error())
+		fmt.Printf("error %s\n", err.Error())
 		os.Exit(1)
 	}
 	i := 0
