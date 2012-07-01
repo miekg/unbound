@@ -18,7 +18,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	if err = u.Hosts("/etc/hosts"); err != nil {
+	if err := u.Hosts("/etc/hosts"); err != nil {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
 	}
