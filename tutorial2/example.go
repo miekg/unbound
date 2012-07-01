@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	r, err := u.Resolve("nlnetlabs.nl.", dns.TypeA, dns.ClassINET)
+	r, err := u.Resolve("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET)
 	if err != nil {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
