@@ -1,7 +1,18 @@
-// See libunbound(3) for the documentation.
-// The names of the methods is in sync with the
-// names used in unbound, except for ub_ctx_create() and ub_ctx_delete(),
-// which becomes: New() and Destroy().
+// Package unbound implements a wrapper for libunbound(3).
+// Unbound is a DNSSEC aware resolver, see https://unbound.net/
+// for more information.
+//
+// The method's documentation can be found in libunbound(3).
+// The names of the methods are in sync with the
+// names used in unbound, but the underscored are removed and they
+// are in camelcase, e.g. ub_ctx_resolv_conf becomes u.ResolvConf.
+// Except for ub_ctx_create() and ub_ctx_delete(),
+// which beome: New() and Destroy().
+//
+// Basic use pattern:
+//	u := unbound.New()
+//	defer u.Destroy()
+//	err := u.ResolvConf("/etc/resolv.conf")
 package unbound
 
 /*
@@ -35,21 +46,22 @@ type Unbound struct {
 
 // Results is Unbound's ub_result adapted for Go.
 type Result struct {
-	Qname        string   // text string, original question
-	Qtype        uint16   // type code asked for
-	Qclass       uint16   // class code asked for 
-	Data         [][]byte // slice of rdata items,
-	CanonName    string   // canonical name of result
-	Rcode        int      // additional error code in case of no data
-	AnswerPacket *dns.Msg // full network format answer packet
-	HaveData     bool     // true if there is data
-	NxDomain     bool     // true if nodata because name does not exist
-	Secure       bool     // true if result is secure
-	Bogus        bool     // true if a security failure happened
-	WhyBogus     string   // string with error if bogus
+	Qname        string   // Text string, original question
+	Qtype        uint16   // Type code asked for
+	Qclass       uint16   // Class code asked for 
+	Data         [][]byte // Slice of rdata items,
+	CanonName    string   // Canonical name of result
+	Rcode        int      // Additional error code in case of no data
+	AnswerPacket *dns.Msg // Full network format answer packet
+	HaveData     bool     // True if there is data
+	NxDomain     bool     // True if nodata because name does not exist
+	Secure       bool     // True if result is secure
+	Bogus        bool     // True if a security failure happened
+	WhyBogus     string   // String with error if bogus
 }
 
-// UnboundError is an error returned from Unbound
+// UnboundError is an error returned from Unbound, it wraps both the
+// return code and the error string as returned by ub_strerror.
 type UnboundError struct {
 	Err  string
 	code int
@@ -210,6 +222,7 @@ func (u *Unbound) DebugOut(out io.Reader) error {
 	return newError(int(i))
 }
 
+// DataRemove wraps Unbound's ub_ctx_data_level
 func (u *Unbound) DebugLevel(d int) error {
 	i := C.ub_ctx_debuglevel(u.ctx, C.int(d))
 	return newError(int(i))

@@ -13,14 +13,12 @@ func main() {
 	u := unbound.New()
 	defer u.Destroy()
 
-	err := u.ResolvConf("/etc/resolv.conf")
-	if err != nil {
+	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
 	}
 
-	err = u.Hosts("/etc/hosts")
-	if err != nil {
+	if err = u.Hosts("/etc/hosts"); err != nil {
 		fmt.Printf("error %s", err.Error())
 		os.Exit(1)
 	}
