@@ -55,6 +55,8 @@ func examineResult(query string, r *unbound.Result) {
 		fmt.Printf("result data element as RR: %s\n", r.Rr[i])
 	}
 	fmt.Printf("result has %d data element(s)\n", len(r.Data))
+
+	fmt.Printf("result packet is \n%s\n", r.AnswerPacket)
 }
 
 func main() {
