@@ -77,7 +77,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	r, err := u.Resolve(flag.Arg(0), dns.TypeMX, dns.ClassINET)
+	r, err := u.Resolve(flag.Arg(0), dns.TypeA, dns.ClassINET)
 	if err != nil {
 		fmt.Printf("resolve error %s\n", err.Error())
 		os.Exit(1)
