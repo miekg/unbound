@@ -7,7 +7,7 @@
 // names used in unbound, but the underscores are removed and they
 // are in camel-case, e.g. ub_ctx_resolv_conf becomes u.ResolvConf.
 // Except for ub_ctx_create() and ub_ctx_delete(),
-// which beome: New() and Destroy().
+// which become: New() and Destroy().
 //
 // Basic use pattern:
 //	u := unbound.New()
