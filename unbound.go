@@ -164,8 +164,6 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Qtype = uint16(res.qtype)
 	r.Qclass = uint16(res.qclass)
 	r.Data = make([][]byte, 0)
-	// Create RR
-
 	j := 0
 	b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 	for len(b) != 0 {
@@ -173,10 +171,12 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 		j++
 		b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 	}
+	// Try to create an RR
+
 	r.CanonName = C.GoString(res.canonname)
 	r.Rcode = int(res.rcode)
 	r.AnswerPacket = new(dns.Msg)
-	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len)) // TODO(mg): return code
+	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len)) // Should always work
 	r.HaveData = res.havedata == 1
 	r.NxDomain = res.nxdomain == 1
 	r.Secure = res.secure == 1
