@@ -13,6 +13,10 @@
 //	u := unbound.New()
 //	defer u.Destroy()
 //	err := u.ResolvConf("/etc/resolv.conf")
+//
+// The asynchronous functions are implemented using goroutines. This
+// means the following functions are not useful in Go and therefor
+// not implemented: ub_fd, ub_wait, ub_poll, ub_process, ub_cancel.
 package unbound
 
 /*
