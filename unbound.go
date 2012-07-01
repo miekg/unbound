@@ -171,8 +171,6 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 		j++
 		b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 	}
-	// Try to create an RR
-
 	r.CanonName = C.GoString(res.canonname)
 	r.Rcode = int(res.rcode)
 	r.AnswerPacket = new(dns.Msg)
