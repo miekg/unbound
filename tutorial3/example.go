@@ -12,48 +12,48 @@ import (
 
 // Examine the result structure in detail
 func examineResult(query string, r *unbound.Result) {
-	fmt.Printf("The query is for: %s\n", query);
-	fmt.Printf("The result has:\n");
-	fmt.Printf("qname: %s\n", r.Qname);
-	fmt.Printf("qtype: %d\n", r.Qtype);
-	fmt.Printf("qclass: %d\n", r.Qclass);
+	fmt.Printf("The query is for: %s\n", query)
+	fmt.Printf("The result has:\n")
+	fmt.Printf("qname: %s\n", r.Qname)
+	fmt.Printf("qtype: %d\n", r.Qtype)
+	fmt.Printf("qclass: %d\n", r.Qclass)
 	if r.CanonName != "" {
-		fmt.Printf("canonical name: %s\n", r.CanonName);
+		fmt.Printf("canonical name: %s\n", r.CanonName)
 	} else {
-		fmt.Printf("canonical name: <none>\n");
+		fmt.Printf("canonical name: <none>\n")
 	}
 
 	if r.HaveData {
-		fmt.Printf("has data\n");
-	} else	{
-		fmt.Printf("has no data\n");
+		fmt.Printf("has data\n")
+	} else {
+		fmt.Printf("has no data\n")
 	}
 
 	if r.NxDomain {
-		fmt.Printf("nxdomain (name does not exist)\n");
+		fmt.Printf("nxdomain (name does not exist)\n")
 	} else {
-		fmt.Printf("not an nxdomain (name exists)\n");
+		fmt.Printf("not an nxdomain (name exists)\n")
 	}
 
 	if r.Secure {
-		fmt.Printf("validated to be secure\n");
+		fmt.Printf("validated to be secure\n")
 	} else {
-		fmt.Printf("not validated as secure\n");
+		fmt.Printf("not validated as secure\n")
 	}
 
 	if r.Bogus {
-		fmt.Printf("a security failure! (bogus)\n");
-	} else	{
-		fmt.Printf("not a security failure (not bogus)\n");
+		fmt.Printf("a security failure! (bogus)\n")
+	} else {
+		fmt.Printf("not a security failure (not bogus)\n")
 	}
-	
-	fmt.Printf("DNS rcode: %d\n\n", r.Rcode);
+
+	fmt.Printf("DNS rcode: %d\n\n", r.Rcode)
 
 	for i, d := range r.Data {
 		fmt.Printf("result data element %d has length %d\n", i, len(d))
 		fmt.Printf("result data element %d is: %v\n", i, d)
 	}
-	fmt.Printf("result has %d data element(s)\n", len(r.Data));
+	fmt.Printf("result has %d data element(s)\n", len(r.Data))
 }
 
 func main() {

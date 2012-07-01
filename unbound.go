@@ -164,13 +164,14 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Qtype = uint16(res.qtype)
 	r.Qclass = uint16(res.qclass)
 	r.Data = make([][]byte, 0)
-	for i := 0; i < int(C.array_len(res.len))-1; i++ {
-		println("i", i)
-		println("len", int(C.array_len(res.len))-1)
-		r.Data = append(r.Data,
-			C.GoBytes(
-				unsafe.Pointer(C.array_elem_char(res.data, C.int(i))),
-				C.array_elem_int(res.len, C.int(i))))
+	// Create RR
+
+	j := 0
+	b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
+	for len(b) != 0 {
+		r.Data = append(r.Data, b)
+		j++
+		b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 	}
 	r.CanonName = C.GoString(res.canonname)
 	r.Rcode = int(res.rcode)
@@ -190,7 +191,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 // The function f is called after the resolution is finished.
 // Also the ub_cancel, ub_wait_, ub_fd? are not implemented.
 func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, m interface{}, f func(interface{}, error, *Result)) error {
-	go func(){
+	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
 		f(m, e, r)
 	}()
