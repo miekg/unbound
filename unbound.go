@@ -22,10 +22,9 @@ package unbound
 
 typedef struct ub_ctx ctx;
 
-int array_len(int *l)			{ return sizeof(l)/sizeof(int); }
 int array_elem_int(int *l, int i)       { return l[i]; }
 char * array_elem_char(char **l, int i) { return l[i]; }
-
+char * new_char_pointer()               { char *p = NULL; return p; }
 struct ub_result *new_ub_result() {
 	struct ub_result *r;
 	r = calloc(sizeof(struct ub_result), 1);
@@ -118,12 +117,14 @@ func (u *Unbound) SetOption(opt, val string) error {
 
 // GetOption wraps Unbound's ub_ctx_get_option.
 func (u *Unbound) GetOption(opt string) (string, error) {
-	val := ""
-	cval := C.CString(val)
+	copt := C.CString(opt)
+	defer C.free(unsafe.Pointer(copt))
+
+	cval := C.new_char_pointer()
 	defer C.free(unsafe.Pointer(cval))
 	i := C.ub_ctx_get_option(u.ctx, C.CString(opt), &cval)
 	// Not sure if this works...?
-	return val, newError(int(i))
+	return C.GoString(cval), newError(int(i))
 }
 
 // Config wraps Unbound's ub_ctx_config.
