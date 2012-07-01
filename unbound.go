@@ -50,6 +50,7 @@ type Result struct {
 	Qtype        uint16   // Type code asked for
 	Qclass       uint16   // Class code asked for 
 	Data         [][]byte // Slice of rdata items,
+	Rr           []dns.RR // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
 	CanonName    string   // Canonical name of result
 	Rcode        int      // Additional error code in case of no data
 	AnswerPacket *dns.Msg // Full network format answer packet
@@ -163,14 +164,36 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Qname = C.GoString(res.qname)
 	r.Qtype = uint16(res.qtype)
 	r.Qclass = uint16(res.qclass)
+
+	// Re-create the RRs
+	var h dns.RR_Header
+	h.Name = r.Qname
+	h.Rrtype = r.Qtype
+	h.Class = r.Qclass
+	h.Ttl = 0
+
 	r.Data = make([][]byte, 0)
+	r.Rr = make([]dns.RR, 0)
 	j := 0
 	b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 	for len(b) != 0 {
+		// Create the RR
+		h.Rdlength = uint16(len(b))
+		msg := make([]byte, 20+len(h.Name)) // Long enough
+		off, _ := dns.PackStruct(&h, msg, 0)
+		msg = msg[:off]
+		rrbuf := append(msg, b...)
+		rr, _, ok := dns.UnpackRR(rrbuf, 0)
+		if ok {
+			r.Rr = append(r.Rr, rr)
+		}
+
 		r.Data = append(r.Data, b)
 		j++
 		b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
+
 	}
+
 	r.CanonName = C.GoString(res.canonname)
 	r.Rcode = int(res.rcode)
 	r.AnswerPacket = new(dns.Msg)

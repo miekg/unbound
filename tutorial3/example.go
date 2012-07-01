@@ -52,6 +52,7 @@ func examineResult(query string, r *unbound.Result) {
 	for i, d := range r.Data {
 		fmt.Printf("result data element %d has length %d\n", i, len(d))
 		fmt.Printf("result data element %d is: %v\n", i, d)
+		fmt.Printf("result data element as RR: %s\n", r.Rr[i])
 	}
 	fmt.Printf("result has %d data element(s)\n", len(r.Data))
 }
@@ -76,7 +77,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	r, err := u.Resolve(flag.Arg(0), dns.TypeA, dns.ClassINET)
+	r, err := u.Resolve(flag.Arg(0), dns.TypeMX, dns.ClassINET)
 	if err != nil {
 		fmt.Printf("resolve error %s\n", err.Error())
 		os.Exit(1)
