@@ -18,7 +18,7 @@
 // means the following functions are not useful in Go and therefor
 // not implemented: ub_fd, ub_wait, ub_poll, ub_process and ub_cancel.
 //
-// Unbound's ub_result has been modifed. An extra field has been added
+// Unbound's ub_result has been modified. An extra field has been added
 // named 'Rr' which is a []dns.RR.
 package unbound
 
