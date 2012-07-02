@@ -13,11 +13,19 @@
 //	u := unbound.New()
 //	defer u.Destroy()
 //	err := u.ResolvConf("/etc/resolv.conf")
+//
+// The asynchronous functions are implemented using goroutines. This
+// means the following functions are not useful in Go and therefor
+// not implemented: ub_fd, ub_wait, ub_poll, ub_process and ub_cancel.
+//
+// Unbound's ub_result has been modified. An extra field has been added
+// named 'Rr' which is a []dns.RR.
 package unbound
 
 /*
 #cgo LDFLAGS: -lunbound
 #include <stdlib.h>
+#include <stdio.h>
 #include <unbound.h>
 
 typedef struct ub_ctx ctx;
@@ -25,6 +33,7 @@ typedef struct ub_ctx ctx;
 int array_elem_int(int *l, int i)       { return l[i]; }
 char * array_elem_char(char **l, int i) { return l[i]; }
 char * new_char_pointer()               { char *p = NULL; return p; }
+
 struct ub_result *new_ub_result() {
 	struct ub_result *r;
 	r = calloc(sizeof(struct ub_result), 1);
@@ -123,7 +132,6 @@ func (u *Unbound) GetOption(opt string) (string, error) {
 	cval := C.new_char_pointer()
 	defer C.free(unsafe.Pointer(cval))
 	i := C.ub_ctx_get_option(u.ctx, C.CString(opt), &cval)
-	// Not sure if this works...?
 	return C.GoString(cval), newError(int(i))
 }
 
@@ -279,12 +287,14 @@ func (u *Unbound) DataRemove(data string) error {
 
 // DebugOut wraps Unbound's ub_ctx_debugout
 func (u *Unbound) DebugOut(out *os.File) error {
-	// TODO(mg): How to converto os.File to *FILE?
-	i := 0
+	cmode := C.CString("a+")
+	defer C.free(unsafe.Pointer(cmode))
+	file := C.fdopen(C.int(out.Fd()), cmode)
+	i := C.ub_ctx_debugout(u.ctx, unsafe.Pointer(file))
 	return newError(int(i))
 }
 
-// DataRemove wraps Unbound's ub_ctx_data_level
+// DebugLevel wraps Unbound's ub_ctx_data_level
 func (u *Unbound) DebugLevel(d int) error {
 	i := C.ub_ctx_debuglevel(u.ctx, C.int(d))
 	return newError(int(i))
