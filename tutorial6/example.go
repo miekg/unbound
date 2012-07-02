@@ -42,6 +42,7 @@ func main() {
 			fmt.Printf("Result is secure\n")
 		} else if r.Bogus {
 			fmt.Printf("Result is bogus: %s\n", r.WhyBogus)
+		} else {
 			fmt.Printf("Result is insecure\n")
 		}
 	}
