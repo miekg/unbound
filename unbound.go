@@ -17,6 +17,9 @@
 // The asynchronous functions are implemented using goroutines. This
 // means the following functions are not useful in Go and therefor
 // not implemented: ub_fd, ub_wait, ub_poll, ub_process and ub_cancel.
+//
+// Unbound's ub_result has been modifed. An extra field has been added
+// named 'Rr' which is a []dns.RR.
 package unbound
 
 /*
@@ -129,7 +132,6 @@ func (u *Unbound) GetOption(opt string) (string, error) {
 	cval := C.new_char_pointer()
 	defer C.free(unsafe.Pointer(cval))
 	i := C.ub_ctx_get_option(u.ctx, C.CString(opt), &cval)
-	// Not sure if this works...?
 	return C.GoString(cval), newError(int(i))
 }
 
