@@ -216,7 +216,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 // it utilizes Go's goroutines to mimic the async behavoir Unbound
 // implements. As a result the function signature is different.
 // The function f is called after the resolution is finished.
-// Also the ub_cancel, ub_wait_, ub_fd? are not implemented.
+// Also the ub_cancel, ub_wait_, ub_fd, us_process are not implemented.
 func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, m interface{}, f func(interface{}, error, *Result)) error {
 	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
