@@ -28,12 +28,9 @@ package unbound
 #include <stdio.h>
 #include <unbound.h>
 
-typedef struct ub_ctx ctx;
-
 int array_elem_int(int *l, int i)       { return l[i]; }
 char * array_elem_char(char **l, int i) { return l[i]; }
 char * new_char_pointer()               { char *p = NULL; return p; }
-
 struct ub_result *new_ub_result() {
 	struct ub_result *r;
 	r = calloc(sizeof(struct ub_result), 1);
@@ -49,7 +46,7 @@ import (
 )
 
 type Unbound struct {
-	ctx *C.ctx
+	ctx *C.struct_ctx
 }
 
 // Results is Unbound's ub_result adapted for Go.
@@ -219,7 +216,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 // it utilizes Go's goroutines to mimic the async behavoir Unbound
 // implements. As a result the function signature is different.
 // The function f is called after the resolution is finished.
-// Also the ub_cancel, ub_wait_, ub_fd? are not implemented.
+// Also the ub_cancel, ub_wait_, ub_fd, us_process are not implemented.
 func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, m interface{}, f func(interface{}, error, *Result)) error {
 	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
