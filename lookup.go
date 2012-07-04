@@ -9,8 +9,8 @@ import (
 // They are adapted to the package unbound and the package dns.
 
 // LookupAddr performs a reverse lookup for the given address, returning a
-// list of names mapping to that address. It is up to the caller to prime
-// Unbound with trust anchor(s).
+// list of names mapping to that address. 
+// It is up to the caller to prime Unbound with trust anchor(s).
 func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 	reverse, err := dns.ReverseAddr(addr)
 	if err != nil {
@@ -53,6 +53,7 @@ func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 // LookupIP looks up host using the local resolver. It returns an array of
 // that host's IPv4 and IPv6 addresses. It is up to the caller to prime
 // Unbound with trust anchor(s).
+// The A and AAAA lookup are performed in parallel.
 func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
 	ca := make(chan net.IP)
 	caaaa := make(chan net.IP)
