@@ -32,8 +32,9 @@ func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 // part of the lookup. It is up to the caller to prime
 // Unbound with trust anchor(s).
 func (u *Unbound) LookupCNAME(name string) (cname string, err error) {
-	// what to do here?
-	return "", nil
+	r, err := u.Resolve(name, dns.TypeA, dns.ClassINET)
+	// TODO(mg): if nothing found try AAAA?
+	return r.CanonName, err
 }
 
 // LookupHost looks up the given host using the local resolver. It returns
@@ -53,42 +54,33 @@ func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 // LookupIP looks up host using the local resolver. It returns an array of
 // that host's IPv4 and IPv6 addresses. It is up to the caller to prime
 // Unbound with trust anchor(s).
-// The A and AAAA lookup are performed in parallel.
+// The A and AAAA lookups are performed in parallel.
 func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
-	ca := make(chan net.IP)
-	caaaa := make(chan net.IP)
+	ca := make(chan *Result)
+	caaaa := make(chan *Result)
 
-	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca, lookupA)
-	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa, lookupAAAA)
-	for ip := range ca {
-		addrs = append(addrs, ip)
+	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca, lookupHelper)
+	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa, lookupHelper)
+	ra := <-ca
+	raaaa := <-caaaa
+
+	for _, rr := range ra.Rr {
+		addrs = append(addrs, rr.(*dns.RR_A).A)
 	}
-	for ip := range caaaa {
-		addrs = append(addrs, ip)
+
+	for _, rr := range raaaa.Rr {
+		addrs = append(addrs, rr.(*dns.RR_AAAA).AAAA)
 	}
 	return
 }
 
-func lookupA(i interface{}, e error, r *Result) {
-	c := i.(chan net.IP)
+func lookupHelper(i interface{}, e error, r *Result) {
+	c := i.(chan *Result)
 	defer close(c)
 	if e != nil {
 		return
 	}
-	for _, rr := range r.Rr {
-		c <- rr.(*dns.RR_A).A
-	}
-}
-
-func lookupAAAA(i interface{}, e error, r *Result) {
-	c := i.(chan net.IP)
-	defer close(c)
-	if e != nil {
-		return
-	}
-	for _, rr := range r.Rr {
-		c <- rr.(*dns.RR_AAAA).AAAA
-	}
+	c <- r
 }
 
 // LookupMX returns the DNS MX records for the given domain name sorted by
