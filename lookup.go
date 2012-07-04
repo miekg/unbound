@@ -32,6 +32,7 @@ func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 // part of the lookup. It is up to the caller to prime
 // Unbound with trust anchor(s).
 func (u *Unbound) LookupCNAME(name string) (cname string, err error) {
+	// what to do here?
 	return "", nil
 }
 
@@ -111,8 +112,16 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
 // SRV records under non-standard names, if both service and proto are
 // empty strings, LookupSRV looks up name directly. It is up to the caller to prime
 // Unbound with trust anchor(s).
-func (u *Unbound) LookupSRV(service, proto, name string) (cname string, addrs []*dns.RR_SRV, err error) {
-	return "", nil, nil
+func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*dns.RR_SRV, err error) {
+	r, err := u.Resolve("_" + service + "._" + proto + "." + name, dns.TypeSRV, dns.ClassINET)
+	// TODO(mg): cname
+	if err != nil {
+		return "", nil, err
+	}
+	for _, rr := range r.Rr {
+		srv = append(srv, rr.(*dns.RR_SRV))
+	}
+	return "", srv, err
 }
 
 // LookupTXT returns the DNS TXT records for the given domain name. It is up to the caller to prime
