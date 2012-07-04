@@ -220,7 +220,9 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, m interface{}, f func(interface{}, error, *Result)) error {
 	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
-		f(m, e, r)
+		if f != nil {
+			f(m, e, r)
+		}
 	}()
 	return newError(0)
 }
@@ -296,15 +298,3 @@ func (u *Unbound) DebugLevel(d int) error {
 	i := C.ub_ctx_debuglevel(u.ctx, C.int(d))
 	return newError(int(i))
 }
-
-// AddTaRR calls AddTa, but allows to directly use an dns.RR
-// This method is not found in Unbound.
-func (u *Unbound) AddTaRR(ta dns.RR) error { return u.AddTa(ta.String()) }
-
-// DataAddRR calls DataAdd, but allows to directly use an dns.RR
-// This method is not found in Unbound.
-func (u *Unbound) DataAddRR(data dns.RR) error { return u.DataAdd(data.String()) }
-
-// DataRemoveRR calls DataRemove, but allows to directly use an dns.RR
-// This method is not found in Unbound.
-func (u *Unbound) DataRemoveRR(data dns.RR) error { return u.DataRemove(data.String()) }
