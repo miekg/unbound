@@ -286,7 +286,7 @@ func (u *Unbound) DataRemove(data string) error {
 	return newError(int(i))
 }
 
-// DebugOut wraps Unbound's ub_ctx_debugout
+// DebugOut wraps Unbound's ub_ctx_debugout.
 func (u *Unbound) DebugOut(out *os.File) error {
 	cmode := C.CString("a+")
 	defer C.free(unsafe.Pointer(cmode))
@@ -295,7 +295,7 @@ func (u *Unbound) DebugOut(out *os.File) error {
 	return newError(int(i))
 }
 
-// DebugLevel wraps Unbound's ub_ctx_data_level
+// DebugLevel wraps Unbound's ub_ctx_data_level.
 func (u *Unbound) DebugLevel(d int) error {
 	i := C.ub_ctx_debuglevel(u.ctx, C.int(d))
 	return newError(int(i))
