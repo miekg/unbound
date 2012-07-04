@@ -1,6 +1,8 @@
 // Package unbound implements a wrapper for libunbound(3).
 // Unbound is a DNSSEC aware resolver, see https://unbound.net/
-// for more information.
+// for more information. It's up to the caller to configure
+// Unbound with trust anchors. With these anchors a DNSSEC
+// answer can be validated.
 //
 // The method's documentation can be found in libunbound(3).
 // The names of the methods are in sync with the

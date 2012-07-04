@@ -10,7 +10,6 @@ import (
 
 // LookupAddr performs a reverse lookup for the given address, returning a
 // list of names mapping to that address. 
-// It is up to the caller to prime Unbound with trust anchor(s).
 func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 	reverse, err := dns.ReverseAddr(addr)
 	if err != nil {
@@ -29,8 +28,7 @@ func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 // LookupCNAME returns the canonical DNS host for the given name. Callers
 // that do not care about the canonical name can call LookupHost or
 // LookupIP directly; both take care of resolving the canonical name as
-// part of the lookup. It is up to the caller to prime
-// Unbound with trust anchor(s).
+// part of the lookup. 
 func (u *Unbound) LookupCNAME(name string) (cname string, err error) {
 	r, err := u.Resolve(name, dns.TypeA, dns.ClassINET)
 	// TODO(mg): if nothing found try AAAA?
@@ -38,8 +36,7 @@ func (u *Unbound) LookupCNAME(name string) (cname string, err error) {
 }
 
 // LookupHost looks up the given host using the local resolver. It returns
-// an array of that host's addresses. It is up to the caller to prime
-// Unbound with trust anchor(s).
+// an array of that host's addresses.
 func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 	ipaddrs, err := u.LookupIP(host)
 	if err != nil {
@@ -52,8 +49,7 @@ func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 }
 
 // LookupIP looks up host using the local resolver. It returns an array of
-// that host's IPv4 and IPv6 addresses. It is up to the caller to prime
-// Unbound with trust anchor(s).
+// that host's IPv4 and IPv6 addresses.
 // The A and AAAA lookups are performed in parallel.
 func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
 	ca := make(chan *Result)
@@ -84,7 +80,7 @@ func lookupHelper(i interface{}, e error, r *Result) {
 }
 
 // LookupMX returns the DNS MX records for the given domain name sorted by
-// preference. It is up to the caller to prime Unbound with trust anchor(s).
+// preference.
 func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
 	r, err := u.Resolve(name, dns.TypeMX, dns.ClassINET)
 	if err != nil {
@@ -103,8 +99,7 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
 // LookupSRV constructs the DNS name to look up following RFC 2782. That
 // is, it looks up _service._proto.name. To accommodate services publishing
 // SRV records under non-standard names, if both service and proto are
-// empty strings, LookupSRV looks up name directly. It is up to the caller to prime
-// Unbound with trust anchor(s).
+// empty strings, LookupSRV looks up name directly.
 func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*dns.RR_SRV, err error) {
 	r, err := u.Resolve("_" + service + "._" + proto + "." + name, dns.TypeSRV, dns.ClassINET)
 	// TODO(mg): cname
@@ -117,8 +112,7 @@ func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*d
 	return "", srv, err
 }
 
-// LookupTXT returns the DNS TXT records for the given domain name. It is up to the caller to prime
-// Unbound with trust anchor(s).
+// LookupTXT returns the DNS TXT records for the given domain name.
 func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 	r, err := u.Resolve(name, dns.TypeTXT, dns.ClassINET)
 	if err != nil {
