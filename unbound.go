@@ -14,7 +14,9 @@
 // Basic use pattern:
 //	u := unbound.New()
 //	defer u.Destroy()
-//	err := u.ResolvConf("/etc/resolv.conf")
+//	u.ResolvConf("/etc/resolv.conf")
+//	u.AddTaFile("trustanchor")
+//	r, e := u.Resolve("miek.nl", dns.TypeA, dns.ClassINET)
 //
 // The asynchronous functions are implemented using goroutines. This
 // means the following functions are not useful in Go and therefor
@@ -22,6 +24,8 @@
 //
 // Unbound's ub_result has been modified. An extra field has been added
 // named 'Rr' which is a []dns.RR.
+//
+// The Lookup* functions of the net package are re-implemented in this package.
 package unbound
 
 /*
