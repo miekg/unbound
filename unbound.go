@@ -248,7 +248,7 @@ func (u *Unbound) AddTaFile(fname string) error {
 	return newError(int(i))
 }
 
-// AddTaFile wraps Unbound's ub_ctx_trustedkeys.
+// TrustedKeys wraps Unbound's ub_ctx_trustedkeys.
 func (u *Unbound) TrustedKeys(fname string) error {
 	cfname := C.CString(fname)
 	defer C.free(unsafe.Pointer(cfname))

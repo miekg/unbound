@@ -101,8 +101,13 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
 // SRV records under non-standard names, if both service and proto are
 // empty strings, LookupSRV looks up name directly.
 func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*dns.RR_SRV, err error) {
-	r, err := u.Resolve("_" + service + "._" + proto + "." + name, dns.TypeSRV, dns.ClassINET)
-	// TODO(mg): cname
+	r := new(Result)
+	if service == "" && proto == "" {
+		r, err = u.Resolve(name, dns.TypeSRV, dns.ClassINET)
+	} else {
+		r, err = u.Resolve("_" + service + "._" + proto + "." + name, dns.TypeSRV, dns.ClassINET)
+	}
+	// TODO(mg): cname?
 	if err != nil {
 		return "", nil, err
 	}
