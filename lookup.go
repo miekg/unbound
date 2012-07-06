@@ -35,7 +35,7 @@ func (u *Unbound) LookupCNAME(name string) (cname string, err error) {
 	return r.CanonName, err
 }
 
-// LookupHost looks up the given host using the local resolver. It returns
+// LookupHost looks up the given host using Unbound. It returns
 // an array of that host's addresses.
 func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 	ipaddrs, err := u.LookupIP(host)
@@ -48,7 +48,7 @@ func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 	return addrs, nil
 }
 
-// LookupIP looks up host using the local resolver. It returns an array of
+// LookupIP looks up host using Unbound. It returns an array of
 // that host's IPv4 and IPv6 addresses.
 // The A and AAAA lookups are performed in parallel.
 func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
