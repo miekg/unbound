@@ -107,7 +107,6 @@ func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*d
 	} else {
 		r, err = u.Resolve("_" + service + "._" + proto + "." + name, dns.TypeSRV, dns.ClassINET)
 	}
-	// TODO(mg): cname?
 	if err != nil {
 		return "", nil, err
 	}
