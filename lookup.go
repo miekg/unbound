@@ -114,6 +114,14 @@ func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*d
 	for _, rr := range r.Rr {
 		srv = append(srv, rr.(*dns.RR_SRV))
 	}
+	// Dumb bubble sort (len(srv) is never a large number) to sort by priority
+	for i := 0; i < len(srv); i++ {
+		for j := i; j < len(srv); j++ {
+			if srv[i].Priority > srv[j].Priority {
+				srv[j], srv[i] = srv[i], srv[j]
+			}
+		}
+	}
 	return "", srv, err
 }
 
