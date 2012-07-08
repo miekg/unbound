@@ -23,7 +23,7 @@ func main() {
 		os.Exit(1)
 	}
 	q := make(chan bool)
-	// start two goroutine
+	// start two goroutines
 	go goroutineOne(u, q)
 	go goroutineTwo(u, q)
 	// wait for both routines to complete
