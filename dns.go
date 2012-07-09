@@ -1,7 +1,7 @@
 package unbound
 
 import (
-	"dns"
+	"github.com/miekg/dns"
 )
 
 // AddTaRR calls AddTa, but allows to directly use an dns.RR.
