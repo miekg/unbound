@@ -35,7 +35,7 @@ package unbound
 #include <unbound.h>
 
 int array_elem_int(int *l, int i)       { return l[i]; }
-char * array_elem_char(char **l, int i) { return l[i]; }
+char * array_elem_char(char **l, int i) { if (l == NULL) return NULL; return l[i]; }
 char * new_char_pointer()               { char *p = NULL; return p; }
 struct ub_result *new_ub_result() {
 	struct ub_result *r;
