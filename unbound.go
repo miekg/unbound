@@ -177,6 +177,16 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Qtype = uint16(res.qtype)
 	r.Qclass = uint16(res.qclass)
 
+	r.CanonName = C.GoString(res.canonname)
+	r.Rcode = int(res.rcode)
+	r.AnswerPacket = new(dns.Msg)
+	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len)) // Should always work
+	r.HaveData = res.havedata == 1
+	r.NxDomain = res.nxdomain == 1
+	r.Secure = res.secure == 1
+	r.Bogus = res.bogus == 1
+	r.WhyBogus = C.GoString(res.why_bogus)
+
 	// Re-create the RRs
 	var h dns.RR_Header
 	h.Name = r.Qname
@@ -187,34 +197,26 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Data = make([][]byte, 0)
 	r.Rr = make([]dns.RR, 0)
 	j := 0
-	b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
-	for len(b) != 0 {
-		// Create the RR
-		h.Rdlength = uint16(len(b))
-		msg := make([]byte, 20+len(h.Name)) // Long enough
-		off, _ := dns.PackStruct(&h, msg, 0)
-		msg = msg[:off]
-		rrbuf := append(msg, b...)
-		rr, _, ok := dns.UnpackRR(rrbuf, 0)
-		if ok {
-			r.Rr = append(r.Rr, rr)
+	if r.HaveData {
+		b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
+		for len(b) != 0 {
+			// Create the RR
+			h.Rdlength = uint16(len(b))
+			msg := make([]byte, 20+len(h.Name)) // Long enough
+			off, _ := dns.PackStruct(&h, msg, 0)
+			msg = msg[:off]
+			rrbuf := append(msg, b...)
+			rr, _, ok := dns.UnpackRR(rrbuf, 0)
+			if ok {
+				r.Rr = append(r.Rr, rr)
+			}
+
+			r.Data = append(r.Data, b)
+			j++
+			b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
+
 		}
-
-		r.Data = append(r.Data, b)
-		j++
-		b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
-
 	}
-
-	r.CanonName = C.GoString(res.canonname)
-	r.Rcode = int(res.rcode)
-	r.AnswerPacket = new(dns.Msg)
-	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len)) // Should always work
-	r.HaveData = res.havedata == 1
-	r.NxDomain = res.nxdomain == 1
-	r.Secure = res.secure == 1
-	r.Bogus = res.bogus == 1
-	r.WhyBogus = C.GoString(res.why_bogus)
 	return r, err
 }
 
