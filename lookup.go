@@ -57,15 +57,27 @@ func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
 
 	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca, lookupHelper)
 	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa, lookupHelper)
-	ra := <-ca
-	raaaa := <-caaaa
-
-	for _, rr := range ra.Rr {
-		addrs = append(addrs, rr.(*dns.RR_A).A)
-	}
-
-	for _, rr := range raaaa.Rr {
-		addrs = append(addrs, rr.(*dns.RR_AAAA).AAAA)
+	seen := 0
+Wait:
+	for {
+		select {
+		case ra := <-ca:
+			for _, rr := range ra.Rr {
+				addrs = append(addrs, rr.(*dns.RR_A).A)
+			}
+			seen++
+			if seen == 2 {
+				break Wait
+			}
+		case raaaa := <-caaaa:
+			for _, rr := range raaaa.Rr {
+				addrs = append(addrs, rr.(*dns.RR_AAAA).AAAA)
+			}
+			seen++
+			if seen == 2 {
+				break Wait
+			}
+		}
 	}
 	return
 }
