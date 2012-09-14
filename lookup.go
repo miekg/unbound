@@ -105,7 +105,7 @@ func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*d
 	if service == "" && proto == "" {
 		r, err = u.Resolve(name, dns.TypeSRV, dns.ClassINET)
 	} else {
-		r, err = u.Resolve("_" + service + "._" + proto + "." + name, dns.TypeSRV, dns.ClassINET)
+		r, err = u.Resolve("_"+service+"._"+proto+"."+name, dns.TypeSRV, dns.ClassINET)
 	}
 	if err != nil {
 		return "", nil, err
@@ -135,4 +135,21 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 		txt = append(txt, rr.(*dns.RR_TXT).Txt...)
 	}
 	return
+}
+
+// LookupTLSA returns the DNS DANE records for the given domain name.
+func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.RR_TLSA, err error) {
+	tlsaname := dns.TLSAName(name, service, proto)
+	if tlsaname == "" {
+		return nil, nil // TODO(mg) make error
+	}
+
+	r, err := u.Resolve(tlsaname, dns.TypeTLSA, dns.ClassINET)
+	if err != nil {
+		return nil, err
+	}
+	for _, rr := range r.Rr {
+		tlsa = append(tlsa, rr.(*dns.RR_TLSA))
+	}
+	return tlsa, nil
 }
