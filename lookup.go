@@ -137,7 +137,10 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 	return
 }
 
-// LookupTLSA returns the DNS DANE records for the given domain name.
+// LookupTLSA returns the DNS DANE records for the given domain service, protocol
+// and domainname
+// LookupTLSA constructs the DNS name to look up following RFC 6698. That
+// is, it looks up _port._proto.name. 
 func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.RR_TLSA, err error) {
 	tlsaname := dns.TLSAName(name, service, proto)
 	if tlsaname == "" {
