@@ -206,8 +206,8 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 			off, _ := dns.PackStruct(&h, msg, 0)
 			msg = msg[:off]
 			rrbuf := append(msg, b...)
-			rr, _, ok := dns.UnpackRR(rrbuf, 0)
-			if ok {
+			rr, _, err := dns.UnpackRR(rrbuf, 0)
+			if err == nil {
 				r.Rr = append(r.Rr, rr)
 			}
 
