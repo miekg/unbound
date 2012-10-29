@@ -34,7 +34,7 @@ package unbound
 #include <stdio.h>
 #include <unbound.h>
 
-int array_elem_int(int *l, int i)       { return l[i]; }
+int    array_elem_int(int *l, int i)    { return l[i]; }
 char * array_elem_char(char **l, int i) { if (l == NULL) return NULL; return l[i]; }
 char * new_char_pointer()               { char *p = NULL; return p; }
 struct ub_result *new_ub_result() {
@@ -203,7 +203,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 			// Create the RR
 			h.Rdlength = uint16(len(b))
 			msg := make([]byte, 20+len(h.Name)) // Long enough
-			off, _ := dns.PackStruct(&h, msg, 0)
+			off, _ := dns.PackStruct(&h, msg, 0, nil, false)
 			msg = msg[:off]
 			rrbuf := append(msg, b...)
 			rr, _, ok := dns.UnpackRR(rrbuf, 0)
