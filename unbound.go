@@ -16,7 +16,7 @@
 //	defer u.Destroy()
 //	u.ResolvConf("/etc/resolv.conf")
 //	u.AddTaFile("trustanchor")
-//	r, e := u.Resolve("miek.nl", dns.TypeA, dns.ClassINET)
+//	r, e := u.Resolve("miek.nl.", dns.TypeA, dns.ClassINET)
 //
 // The asynchronous functions are implemented using goroutines. This
 // means the following functions are not useful in Go and therefor
