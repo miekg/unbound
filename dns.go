@@ -5,7 +5,7 @@ import (
 )
 
 // AddTaRR calls AddTa, but allows to directly use an dns.RR.
-// This method is not found in Unbound.`
+// This method is not found in Unbound.
 func (u *Unbound) AddTaRR(ta dns.RR) error { return u.AddTa(ta.String()) }
 
 // DataAddRR calls DataAdd, but allows to directly use an dns.RR.

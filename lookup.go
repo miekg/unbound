@@ -89,6 +89,15 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
 	for _, rr := range r.Rr {
 		mx = append(mx, rr.(*dns.RR_MX))
 	}
+	// There aren't a million records, do the bubble sort
+	lx := len(mx)
+	for i := 0; i < lx; i++ {
+		for j := i; j < lx; j++ {
+			if mx[j].Preference < mx[i].Preference {
+				mx[j], mx[i] = mx[i], mx[j]
+			}
+		}
+	}
 	return
 }
 
@@ -115,8 +124,9 @@ func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*d
 	}
 	// Dumb bubble sort (len(srv) is never a large number) to sort by priority
 	// The randomness is (hopefully) done at the server 
-	for i := 0; i < len(srv); i++ {
-		for j := i; j < len(srv); j++ {
+	lv := len(srv)
+	for i := 0; i < lv; i++ {
+		for j := i; j < lv; j++ {
 			if srv[i].Priority > srv[j].Priority {
 				srv[j], srv[i] = srv[i], srv[j]
 			}
