@@ -3,11 +3,11 @@ package main
 // https://www.unbound.net/documentation/libunbound-tutorial-2.html
 
 import (
-	"dns"
 	"flag"
 	"fmt"
+	"github.com/miekg/dns"
+	"github.com/miekg/unbound"
 	"os"
-	"unbound"
 )
 
 // Examine the result structure in detail

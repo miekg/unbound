@@ -3,11 +3,11 @@ package main
 // https://www.unbound.net/documentation/libunbound-tutorial-4.html
 
 import (
-	"dns"
 	"fmt"
+	"github.com/miekg/dns"
+	"github.com/miekg/unbound"
 	"os"
 	"time"
-	"unbound"
 )
 
 // This is called when resolution is completed.

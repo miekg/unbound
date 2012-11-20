@@ -203,7 +203,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 			// Create the RR
 			h.Rdlength = uint16(len(b))
 			msg := make([]byte, 20+len(h.Name)) // Long enough
-			off, _ := dns.PackStruct(&h, msg, 0, nil, false)
+			off, _ := dns.PackStruct(&h, msg, 0)
 			msg = msg[:off]
 			rrbuf := append(msg, b...)
 			rr, _, err := dns.UnpackRR(rrbuf, 0)
