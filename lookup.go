@@ -57,15 +57,27 @@ func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
 
 	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca, lookupHelper)
 	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa, lookupHelper)
-	ra := <-ca
-	raaaa := <-caaaa
-
-	for _, rr := range ra.Rr {
-		addrs = append(addrs, rr.(*dns.RR_A).A)
-	}
-
-	for _, rr := range raaaa.Rr {
-		addrs = append(addrs, rr.(*dns.RR_AAAA).AAAA)
+	seen := 0
+Wait:
+	for {
+		select {
+		case ra := <-ca:
+			for _, rr := range ra.Rr {
+				addrs = append(addrs, rr.(*dns.RR_A).A)
+			}
+			seen++
+			if seen == 2 {
+				break Wait
+			}
+		case raaaa := <-caaaa:
+			for _, rr := range raaaa.Rr {
+				addrs = append(addrs, rr.(*dns.RR_AAAA).AAAA)
+			}
+			seen++
+			if seen == 2 {
+				break Wait
+			}
+		}
 	}
 	return
 }
@@ -148,7 +160,8 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 }
 
 // LookupTLSA returns the DNS DANE records for the given domain service, protocol
-// and domainname
+// and domainname.
+//
 // LookupTLSA constructs the DNS name to look up following RFC 6698. That
 // is, it looks up _port._proto.name. 
 func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.RR_TLSA, err error) {
