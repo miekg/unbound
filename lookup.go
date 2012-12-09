@@ -20,7 +20,7 @@ func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 		return nil, err
 	}
 	for _, rr := range r.Rr {
-		name = append(name, rr.(*dns.RR_PTR).Ptr)
+		name = append(name, rr.(*dns.PTR).Ptr)
 	}
 	return
 }
@@ -63,7 +63,7 @@ Wait:
 		select {
 		case ra := <-ca:
 			for _, rr := range ra.Rr {
-				addrs = append(addrs, rr.(*dns.RR_A).A)
+				addrs = append(addrs, rr.(*dns.A).A)
 			}
 			seen++
 			if seen == 2 {
@@ -71,7 +71,7 @@ Wait:
 			}
 		case raaaa := <-caaaa:
 			for _, rr := range raaaa.Rr {
-				addrs = append(addrs, rr.(*dns.RR_AAAA).AAAA)
+				addrs = append(addrs, rr.(*dns.AAAA).AAAA)
 			}
 			seen++
 			if seen == 2 {
@@ -93,13 +93,13 @@ func lookupHelper(i interface{}, e error, r *Result) {
 
 // LookupMX returns the DNS MX records for the given domain name sorted by
 // preference.
-func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
+func (u *Unbound) LookupMX(name string) (mx []*dns.MX, err error) {
 	r, err := u.Resolve(name, dns.TypeMX, dns.ClassINET)
 	if err != nil {
 		return nil, err
 	}
 	for _, rr := range r.Rr {
-		mx = append(mx, rr.(*dns.RR_MX))
+		mx = append(mx, rr.(*dns.MX))
 	}
 	// There aren't a million records, do the bubble sort
 	lx := len(mx)
@@ -121,7 +121,7 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.RR_MX, err error) {
 // is, it looks up _service._proto.name. To accommodate services publishing
 // SRV records under non-standard names, if both service and proto are
 // empty strings, LookupSRV looks up name directly.
-func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*dns.RR_SRV, err error) {
+func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*dns.SRV, err error) {
 	r := new(Result)
 	if service == "" && proto == "" {
 		r, err = u.Resolve(name, dns.TypeSRV, dns.ClassINET)
@@ -132,7 +132,7 @@ func (u *Unbound) LookupSRV(service, proto, name string) (cname string, srv []*d
 		return "", nil, err
 	}
 	for _, rr := range r.Rr {
-		srv = append(srv, rr.(*dns.RR_SRV))
+		srv = append(srv, rr.(*dns.SRV))
 	}
 	// Dumb bubble sort (len(srv) is never a large number) to sort by priority
 	// The randomness is (hopefully) done at the server 
@@ -154,7 +154,7 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 		return nil, err
 	}
 	for _, rr := range r.Rr {
-		txt = append(txt, rr.(*dns.RR_TXT).Txt...)
+		txt = append(txt, rr.(*dns.TXT).Txt...)
 	}
 	return
 }
@@ -164,7 +164,7 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 //
 // LookupTLSA constructs the DNS name to look up following RFC 6698. That
 // is, it looks up _port._proto.name. 
-func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.RR_TLSA, err error) {
+func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.TLSA, err error) {
 	tlsaname := dns.TLSAName(name, service, proto)
 	if tlsaname == "" {
 		return nil, nil // TODO(mg) make error
@@ -175,7 +175,7 @@ func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.RR_TLSA, 
 		return nil, err
 	}
 	for _, rr := range r.Rr {
-		tlsa = append(tlsa, rr.(*dns.RR_TLSA))
+		tlsa = append(tlsa, rr.(*dns.TLSA))
 	}
 	return tlsa, nil
 }
