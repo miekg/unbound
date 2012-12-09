@@ -101,7 +101,7 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.MX, err error) {
 	for _, rr := range r.Rr {
 		mx = append(mx, rr.(*dns.MX))
 	}
-	bypref(mx).sort()
+	byPref(mx).sort()
 	return
 }
 
