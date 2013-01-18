@@ -2,8 +2,7 @@ package unbound
 
 import (
 	"fmt"
-
-//	"testing"
+	"testing"
 )
 
 func ExampleLookupCNAME() {
@@ -31,4 +30,22 @@ func ExampleLookupIP() {
 		return
 	}
 	fmt.Printf("%+v\n", a)
+}
+
+func TestDotLess(t *testing.T) {
+	u := New()
+	defer u.Destroy()
+	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
+		return
+	}
+	a, err := u.LookupTXT("gmail.com")
+	if err != nil {
+		return
+	}
+	for _, r := range a {
+		if len(r) == 0 {
+			t.Log("Failure to get the TXT from gmail.com")
+			t.Fail()
+		}
+	}
 }

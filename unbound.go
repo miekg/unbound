@@ -164,6 +164,8 @@ func (u *Unbound) Hosts(fname string) error {
 
 // Resolve wraps Unbound's ub_resolve.
 func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) {
+	name = dns.Fqdn(name)
+
 	res := C.new_ub_result()
 	r := new(Result)
 	defer C.ub_resolve_free(res)
