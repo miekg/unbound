@@ -48,6 +48,7 @@ import "C"
 import (
 	"github.com/miekg/dns"
 	"os"
+	"time"
 	"unsafe"
 )
 
@@ -57,19 +58,20 @@ type Unbound struct {
 
 // Results is Unbound's ub_result adapted for Go.
 type Result struct {
-	Qname        string   // Text string, original question
-	Qtype        uint16   // Type code asked for
-	Qclass       uint16   // Class code asked for 
-	Data         [][]byte // Slice of rdata items,
-	Rr           []dns.RR // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
-	CanonName    string   // Canonical name of result
-	Rcode        int      // Additional error code in case of no data
-	AnswerPacket *dns.Msg // Full network format answer packet
-	HaveData     bool     // True if there is data
-	NxDomain     bool     // True if nodata because name does not exist
-	Secure       bool     // True if result is secure
-	Bogus        bool     // True if a security failure happened
-	WhyBogus     string   // String with error if bogus
+	Qname        string    // Text string, original question
+	Qtype        uint16    // Type code asked for
+	Qclass       uint16    // Class code asked for 
+	Data         [][]byte  // Slice of rdata items,
+	Rr           []dns.RR  // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
+	CanonName    string    // Canonical name of result
+	Rcode        int       // Additional error code in case of no data
+	AnswerPacket *dns.Msg  // Full network format answer packet
+	HaveData     bool      // True if there is data
+	NxDomain     bool      // True if nodata because name does not exist
+	Secure       bool      // True if result is secure
+	Bogus        bool      // True if a security failure happened
+	WhyBogus     string    // String with error if bogus
+	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
 // UnboundError is an error returned from Unbound, it wraps both the
@@ -169,7 +171,9 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	res := C.new_ub_result()
 	r := new(Result)
 	defer C.ub_resolve_free(res)
+	t := time.Now()
 	i := C.ub_resolve(u.ctx, C.CString(name), C.int(rrtype), C.int(rrclass), &res)
+	r.Rtt = time.Since(t)
 	err := newError(int(i))
 	if err != nil {
 		return nil, err
