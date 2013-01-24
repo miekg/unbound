@@ -60,11 +60,11 @@ type Result struct {
 	Qname        string   // Text string, original question
 	Qtype        uint16   // Type code asked for
 	Qclass       uint16   // Class code asked for 
-	Data         [][]byte // Slice of rdata items,
+	Data         [][]byte // Slice of rdata items
 	Rr           []dns.RR // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
 	CanonName    string   // Canonical name of result
 	Rcode        int      // Additional error code in case of no data
-	AnswerPacket *dns.Msg // Full network format answer packet
+	AnswerPacket *dns.Msg // Full answer packet 
 	HaveData     bool     // True if there is data
 	NxDomain     bool     // True if nodata because name does not exist
 	Secure       bool     // True if result is secure
