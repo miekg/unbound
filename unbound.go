@@ -9,7 +9,8 @@
 // names used in unbound, but the underscores are removed and they
 // are in camel-case, e.g. ub_ctx_resolv_conf becomes u.ResolvConf.
 // Except for ub_ctx_create() and ub_ctx_delete(),
-// which become: New() and Destroy().
+// which become: New() and Destroy() to be more in line with the standard
+// Go practice.
 //
 // Basic use pattern:
 //	u := unbound.New()
@@ -22,8 +23,8 @@
 // means the following functions are not useful in Go and therefor
 // not implemented: ub_fd, ub_wait, ub_poll, ub_process and ub_cancel.
 //
-// Unbound's ub_result has been modified. An extra field has been added
-// named 'Rr' which is a []dns.RR.
+// Unbound's ub_result (named Result in the package) has been modified. 
+// An extra field has been added, 'Rr', which is a []dns.RR.
 //
 // The Lookup* functions of the net package are re-implemented in this package.
 package unbound
@@ -61,16 +62,16 @@ type Result struct {
 	Qname        string        // Text string, original question
 	Qtype        uint16        // Type code asked for
 	Qclass       uint16        // Class code asked for
-	Data         [][]byte      // Slice of rdata items
-	Rr           []dns.RR      // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
+	Data         [][]byte      // Slice of rdata items formed from the reply
+	Rr           []dns.RR      // The RR encoded from Data, Qclass, Qtype and Qname (not in Unbound)
 	CanonName    string        // Canonical name of result
 	Rcode        int           // Additional error code in case of no data
-	AnswerPacket *dns.Msg      // Full network format answer packet
+	AnswerPacket *dns.Msg      // Full answer packet
 	HaveData     bool          // True if there is data
-	NxDomain     bool          // True if nodata because name does not exist
-	Secure       bool          // True if result is secure
+	NxDomain     bool          // True if the name does not exist
+	Secure       bool          // True if the result is secure
 	Bogus        bool          // True if a security failure happened
-	WhyBogus     string        // String with error if bogus
+	WhyBogus     string        // String with error when bogus
 	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
@@ -234,10 +235,10 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 }
 
 // ResolveAsync does *not* wrap the Unbound function, instead
-// it utilizes Go's goroutines and channels to implement the asynchronous behavoir Unbound
+// it utilizes Go's goroutines and channels to implement the asynchronous behavior Unbound
 // implements. As a result the function signature is different.
 // The result (or an error) is returned on the channel c.
-// Also the ub_cancel, ub_wait_, ub_fd, us_process are not implemented.
+// Also the ub_cancel, ub_wait_, ub_fd, ub_process are not implemented.
 func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, c chan *ResultError) {
 	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
