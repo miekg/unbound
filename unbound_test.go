@@ -65,6 +65,8 @@ func TestUnicode(t *testing.T) {
 		if len(r) == 0 {
 			t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
 			t.Fail()
+			continue
 		}
+		t.Logf("Found %s\n", r)
 	}
 }
