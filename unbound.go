@@ -81,7 +81,8 @@ type UnboundError struct {
 	code int
 }
 
-// TODO(mg): doc
+// ResultError encapsulates a *Result and an error. This is used to
+// communicate with unbound over a channel.
 type ResultError struct {
 	*Result
 	Error error
