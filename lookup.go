@@ -52,11 +52,11 @@ func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 // that host's IPv4 and IPv6 addresses.
 // The A and AAAA lookups are performed in parallel.
 func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
-	ca := make(chan *Result)
-	caaaa := make(chan *Result)
+	ca := make(chan *ResultError)
+	caaaa := make(chan *ResultError)
 
-	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca, lookupHelper)
-	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa, lookupHelper)
+	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca)
+	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa)
 	seen := 0
 Wait:
 	for {
@@ -71,6 +71,7 @@ Wait:
 			}
 		case raaaa := <-caaaa:
 			for _, rr := range raaaa.Rr {
+				println("HHU")
 				addrs = append(addrs, rr.(*dns.AAAA).AAAA)
 			}
 			seen++
@@ -80,15 +81,6 @@ Wait:
 		}
 	}
 	return
-}
-
-func lookupHelper(i interface{}, e error, r *Result) {
-	c := i.(chan *Result)
-	defer close(c)
-	if e != nil {
-		return
-	}
-	c <- r
 }
 
 // LookupMX returns the DNS MX records for the given domain name sorted by

@@ -49,3 +49,22 @@ func TestDotLess(t *testing.T) {
 		}
 	}
 }
+
+func TestUnicode(t *testing.T) {
+	u  := New()
+	defer u.Destroy()
+	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
+		return
+	}
+	a, err := u.LookupHost("☁→❄→☃→☀→☺→☂→☹→✝.ws.")
+	if err != nil {
+		t.Logf("Failed to lookup host %s\n", err.Error())
+		t.Fail()
+	}
+	for _, r := range a {
+		if len(r) == 0 {
+			t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
+			t.Fail()
+		}
+	}
+}
