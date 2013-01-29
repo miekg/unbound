@@ -7,7 +7,6 @@ import (
 	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
 	"os"
-	"time"
 )
 
 // This is called when resolution is completed.
@@ -27,7 +26,7 @@ func mycallback(m interface{}, e error, r *unbound.Result) {
 func main() {
 	u := unbound.New()
 	defer u.Destroy()
-	done := 0
+	done := make(chan *unbound.ResultError)
 
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
 		fmt.Printf("error %s\n", err.Error())
@@ -39,16 +38,21 @@ func main() {
 		os.Exit(1)
 	}
 
-	err := u.ResolveAsync("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET, &done, mycallback)
-	if err != nil { // Will not happen in Go's case, as the return code is always nil
-		fmt.Printf("error %s\n", err.Error())
-		os.Exit(1)
-	}
-	i := 0
-	for done == 0 {
-		time.Sleep(1e8) // wait 1/10 of a second
-		fmt.Printf("time passed (%d) ..\n", i)
-		i++
+	u.ResolveAsync("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET, done)
+For:
+	for {
+		select {
+		case r := <-done:
+			if r.Error != nil {
+				fmt.Printf("resolve error: %s\n", r.Error.Error())
+				break For
+			}
+			if r.Result.HaveData {
+				fmt.Printf("The address of %s is %v\n", r.Result.Qname, r.Result.Data[0])
+				break For
+			}
+
+		}
 	}
 	fmt.Println("done")
 }

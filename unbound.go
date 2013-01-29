@@ -84,7 +84,7 @@ type UnboundError struct {
 // TODO(mg): doc
 type ResultError struct {
 	*Result
-	error
+	Error error
 }
 
 func (e *UnboundError) Error() string {
