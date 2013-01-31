@@ -28,7 +28,7 @@ func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 // LookupCNAME returns the canonical DNS host for the given name. Callers
 // that do not care about the canonical name can call LookupHost or
 // LookupIP directly; both take care of resolving the canonical name as
-// part of the lookup. 
+// part of the lookup.
 func (u *Unbound) LookupCNAME(name string) (cname string, err error) {
 	r, err := u.Resolve(name, dns.TypeA, dns.ClassINET)
 	// TODO(mg): if nothing found try AAAA?
@@ -52,26 +52,21 @@ func (u *Unbound) LookupHost(host string) (addrs []string, err error) {
 // that host's IPv4 and IPv6 addresses.
 // The A and AAAA lookups are performed in parallel.
 func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
-	ca := make(chan *Result)
-	caaaa := make(chan *Result)
-
-	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, ca, lookupHelper)
-	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, caaaa, lookupHelper)
+	c := make(chan *ResultError)
+	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, c)
+	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, c)
 	seen := 0
 Wait:
 	for {
 		select {
-		case ra := <-ca:
-			for _, rr := range ra.Rr {
-				addrs = append(addrs, rr.(*dns.A).A)
-			}
-			seen++
-			if seen == 2 {
-				break Wait
-			}
-		case raaaa := <-caaaa:
-			for _, rr := range raaaa.Rr {
-				addrs = append(addrs, rr.(*dns.AAAA).AAAA)
+		case r := <-c:
+			for _, rr := range r.Rr {
+				if x, ok := rr.(*dns.A); ok {
+					addrs = append(addrs, x.A)
+				}
+				if x, ok := rr.(*dns.AAAA); ok {
+					addrs = append(addrs, x.AAAA)
+				}
 			}
 			seen++
 			if seen == 2 {
@@ -80,15 +75,6 @@ Wait:
 		}
 	}
 	return
-}
-
-func lookupHelper(i interface{}, e error, r *Result) {
-	c := i.(chan *Result)
-	defer close(c)
-	if e != nil {
-		return
-	}
-	c <- r
 }
 
 // LookupMX returns the DNS MX records for the given domain name sorted by

@@ -48,6 +48,7 @@ import "C"
 import (
 	"github.com/miekg/dns"
 	"os"
+	"time"
 	"unsafe"
 )
 
@@ -57,19 +58,20 @@ type Unbound struct {
 
 // Results is Unbound's ub_result adapted for Go.
 type Result struct {
-	Qname        string   // Text string, original question
-	Qtype        uint16   // Type code asked for
-	Qclass       uint16   // Class code asked for 
-	Data         [][]byte // Slice of rdata items
-	Rr           []dns.RR // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
-	CanonName    string   // Canonical name of result
-	Rcode        int      // Additional error code in case of no data
-	AnswerPacket *dns.Msg // Full answer packet, note the query ID will always be zero
-	HaveData     bool     // True if there is data
-	NxDomain     bool     // True if nodata because name does not exist
-	Secure       bool     // True if result is secure
-	Bogus        bool     // True if a security failure happened
-	WhyBogus     string   // String with error if bogus
+	Qname        string        // Text string, original question
+	Qtype        uint16        // Type code asked for
+	Qclass       uint16        // Class code asked for
+	Data         [][]byte      // Slice of rdata items
+	Rr           []dns.RR      // The RR encoded from the Data, Qclass, Qtype and Qname (not in Unbound)
+	CanonName    string        // Canonical name of result
+	Rcode        int           // Additional error code in case of no data
+	AnswerPacket *dns.Msg      // Full network format answer packet
+	HaveData     bool          // True if there is data
+	NxDomain     bool          // True if nodata because name does not exist
+	Secure       bool          // True if result is secure
+	Bogus        bool          // True if a security failure happened
+	WhyBogus     string        // String with error if bogus
+	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
 // UnboundError is an error returned from Unbound, it wraps both the
@@ -77,6 +79,13 @@ type Result struct {
 type UnboundError struct {
 	Err  string
 	code int
+}
+
+// ResultError encapsulates a *Result and an error. This is used to
+// communicate with unbound over a channel.
+type ResultError struct {
+	*Result
+	Error error
 }
 
 func (e *UnboundError) Error() string {
@@ -169,7 +178,9 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	res := C.new_ub_result()
 	r := new(Result)
 	defer C.ub_resolve_free(res)
+	t := time.Now()
 	i := C.ub_resolve(u.ctx, C.CString(name), C.int(rrtype), C.int(rrclass), &res)
+	r.Rtt = time.Since(t)
 	err := newError(int(i))
 	if err != nil {
 		return nil, err
@@ -196,10 +207,10 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	h.Class = r.Qclass
 	h.Ttl = 0
 
-	r.Data = make([][]byte, 0)
-	r.Rr = make([]dns.RR, 0)
 	j := 0
 	if r.HaveData {
+		r.Data = make([][]byte, 0)
+		r.Rr = make([]dns.RR, 0)
 		b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 		for len(b) != 0 {
 			// Create the RR
@@ -223,18 +234,16 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 }
 
 // ResolveAsync does *not* wrap the Unbound function, instead
-// it utilizes Go's goroutines to mimic the async behavoir Unbound
+// it utilizes Go's goroutines and channels to implement the asynchronous behavoir Unbound
 // implements. As a result the function signature is different.
-// The function f is called after the resolution is finished.
+// The result (or an error) is returned on the channel c.
 // Also the ub_cancel, ub_wait_, ub_fd, us_process are not implemented.
-func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, m interface{}, f func(interface{}, error, *Result)) error {
+func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, c chan *ResultError) {
 	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
-		if f != nil {
-			f(m, e, r)
-		}
+		c <- &ResultError{r, e}
 	}()
-	return newError(0)
+	return
 }
 
 // AddTa wraps Unbound's ub_ctx_add_ta.
