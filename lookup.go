@@ -132,11 +132,11 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 // and domainname.
 //
 // LookupTLSA constructs the DNS name to look up following RFC 6698. That
-// is, it looks up _port._proto.name. 
+// is, it looks up _port._proto.name.
 func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.TLSA, err error) {
-	tlsaname := dns.TLSAName(name, service, proto)
-	if tlsaname == "" {
-		return nil, nil // TODO(mg) make error
+	tlsaname, err := dns.TLSAName(name, service, proto)
+	if err != nil {
+		return nil, err // TODO(mg) make error
 	}
 
 	r, err := u.Resolve(tlsaname, dns.TypeTLSA, dns.ClassINET)
