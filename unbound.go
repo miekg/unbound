@@ -175,12 +175,13 @@ func (u *Unbound) Hosts(fname string) error {
 // Resolve wraps Unbound's ub_resolve.
 func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) {
 	name = dns.Fqdn(name)
-
+	cname := C.CString(name)
+	defer C.free(unsafe.Pointer(cname))
 	res := C.new_ub_result()
 	r := new(Result)
 	defer C.ub_resolve_free(res)
 	t := time.Now()
-	i := C.ub_resolve(u.ctx, C.CString(name), C.int(rrtype), C.int(rrclass), &res)
+	i := C.ub_resolve(u.ctx, cname, C.int(rrtype), C.int(rrclass), &res)
 	r.Rtt = time.Since(t)
 	err := newError(int(i))
 	if err != nil {

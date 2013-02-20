@@ -1,6 +1,7 @@
 package unbound
 
 import (
+	"github.com/miekg/dns"
 	"fmt"
 	"testing"
 )
@@ -50,8 +51,8 @@ func TestDotLess(t *testing.T) {
 	}
 }
 
-func TestUnicode(t *testing.T) {
-	u  := New()
+func TestUnicodeLookupHost(t *testing.T) {
+	u := New()
 	defer u.Destroy()
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
 		return
@@ -61,6 +62,11 @@ func TestUnicode(t *testing.T) {
 		t.Logf("Failed to lookup host %s\n", err.Error())
 		t.Fail()
 	}
+	if len(a) == 0 {
+		t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
+		t.Fail()
+	}
+
 	for _, r := range a {
 		if len(r) == 0 {
 			t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
@@ -68,5 +74,22 @@ func TestUnicode(t *testing.T) {
 			continue
 		}
 		t.Logf("Found %s\n", r)
+	}
+}
+
+func TestUnicodeResolve(t *testing.T) {
+	u  := New()
+	defer u.Destroy()
+	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
+		return
+	}
+	r, err := u.Resolve("☁→❄→☃→☀→☺→☂→☹→✝.ws.", dns.TypeA, dns.ClassINET)
+	if err != nil {
+		t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
+		t.Fail()
+	}
+	if ! r.HaveData {
+		t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
+		t.Fail()
 	}
 }
