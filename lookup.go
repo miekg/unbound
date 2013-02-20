@@ -136,7 +136,7 @@ func (u *Unbound) LookupTXT(name string) (txt []string, err error) {
 func (u *Unbound) LookupTLSA(service, proto, name string) (tlsa []*dns.TLSA, err error) {
 	tlsaname, err := dns.TLSAName(name, service, proto)
 	if err != nil {
-		return nil, err // TODO(mg) make error
+		return nil, err
 	}
 
 	r, err := u.Resolve(tlsaname, dns.TypeTLSA, dns.ClassINET)
