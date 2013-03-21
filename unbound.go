@@ -66,7 +66,7 @@ type Result struct {
 	Qtype        uint16        // Type code asked for
 	Qclass       uint16        // Class code asked for
 	Data         [][]byte      // Slice of rdata items formed from the reply
-	Rr           []dns.RR      // The RR encoded from Data, Qclass, Qtype and Qname (not in Unbound)
+	Rr           []dns.RR      // The RR encoded from Data, Qclass, Qtype, Qname and Ttl (not in Unbound)
 	CanonName    string        // Canonical name of result
 	Rcode        int           // Additional error code in case of no data
 	AnswerPacket *dns.Msg      // Full answer packet
