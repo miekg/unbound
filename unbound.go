@@ -72,6 +72,7 @@ type Result struct {
 	Secure       bool          // True if the result is secure
 	Bogus        bool          // True if a security failure happened
 	WhyBogus     string        // String with error when bogus
+	Ttl	     int	   // TTL for the result in seconds
 	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
@@ -318,4 +319,9 @@ func (u *Unbound) DebugOut(out *os.File) error {
 func (u *Unbound) DebugLevel(d int) error {
 	i := C.ub_ctx_debuglevel(u.ctx, C.int(d))
 	return newError(int(i))
+}
+
+// Version wrap Ubounds's ub_version.
+func (u *Unbound) Version() string {
+	return C.GoString(C.ub_version())
 }
