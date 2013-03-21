@@ -75,7 +75,7 @@ type Result struct {
 	Secure       bool          // True if the result is secure
 	Bogus        bool          // True if a security failure happened
 	WhyBogus     string        // String with error when bogus
-	Ttl          int           // TTL for the result in seconds
+	Ttl          uint32        // TTL for the result in seconds (0 for unbound versions < 1.4.20)
 	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
@@ -222,10 +222,8 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Secure = res.secure == 1
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
-	println("TTL")
 	if u.haveTtl() {
-		println("SETTING TTL")
-		r.Ttl = int(res.ttl)
+		r.Ttl = uint32(res.ttl)
 	}
 
 	// Re-create the RRs
@@ -233,7 +231,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	h.Name = r.Qname
 	h.Rrtype = r.Qtype
 	h.Class = r.Qclass
-	h.Ttl = 0
+	h.Ttl = r.Ttl
 
 	j := 0
 	if r.HaveData {
