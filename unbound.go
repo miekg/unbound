@@ -114,7 +114,6 @@ func errorString(i int) string {
 // unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
 // check if we have such a version
 func (u *Unbound) haveTtl() bool {
-	println(u.version[0], u.version[1], u.version[2])
 	if u.version[0] < 1 {
 		return false
 	}
