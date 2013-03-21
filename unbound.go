@@ -23,7 +23,7 @@
 // means the following functions are not useful in Go and therefor
 // not implemented: ub_fd, ub_wait, ub_poll, ub_process and ub_cancel.
 //
-// Unbound's ub_result (named Result in the package) has been modified. 
+// Unbound's ub_result (named Result in the package) has been modified.
 // An extra field has been added, 'Rr', which is a []dns.RR.
 //
 // The Lookup* functions of the net package are re-implemented in this package.
@@ -49,12 +49,15 @@ import "C"
 import (
 	"github.com/miekg/dns"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 	"unsafe"
 )
 
 type Unbound struct {
 	ctx *C.struct_ctx
+	version [3]int
 }
 
 // Results is Unbound's ub_result adapted for Go.
@@ -72,7 +75,7 @@ type Result struct {
 	Secure       bool          // True if the result is secure
 	Bogus        bool          // True if a security failure happened
 	WhyBogus     string        // String with error when bogus
-	Ttl	     int	   // TTL for the result in seconds
+	Ttl          int           // TTL for the result in seconds
 	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
@@ -108,10 +111,26 @@ func errorString(i int) string {
 	return C.GoString(C.ub_strerror(C.int(i)))
 }
 
+// unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
+// check if we have such a version
+func (u *Unbound) haveTtl() bool {
+	if u.version[0] < 1 {
+		return false
+	}
+	if u.version[1] < 4 {
+		return false
+	}
+	if u.version[2] < 20 {
+		return false
+	}
+	return true
+}
+
 // New wraps Unbound's ub_ctx_create.
 func New() *Unbound {
 	u := new(Unbound)
 	u.ctx = C.ub_ctx_create()
+	u.version = u.Version()
 	return u
 }
 
@@ -321,7 +340,17 @@ func (u *Unbound) DebugLevel(d int) error {
 	return newError(int(i))
 }
 
-// Version wrap Ubounds's ub_version.
-func (u *Unbound) Version() string {
-	return C.GoString(C.ub_version())
+// Version wrap Ubounds's ub_version. Return the version of the Unbound
+// library in as integers [major, minor, patch]
+func (u *Unbound) Version() (version [3]int) {
+	// split the string on the dots
+	v := strings.SplitN(C.GoString(C.ub_version()), ".", 3)
+	if len(v) != 3 {
+		return
+	}
+	version[0], _ = strconv.Atoi(v[0])
+	version[1], _ = strconv.Atoi(v[1])
+	version[2], _ = strconv.Atoi(v[1])
+	return
 }
+
