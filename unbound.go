@@ -111,21 +111,6 @@ func errorString(i int) string {
 	return C.GoString(C.ub_strerror(C.int(i)))
 }
 
-// unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
-// check if we have such a version
-func (u *Unbound) haveTtl() bool {
-	if u.version[0] < 1 {
-		return false
-	}
-	if u.version[1] < 4 {
-		return false
-	}
-	if u.version[2] < 20 {
-		return false
-	}
-	return true
-}
-
 // New wraps Unbound's ub_ctx_create.
 func New() *Unbound {
 	u := new(Unbound)
@@ -221,9 +206,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Secure = res.secure == 1
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
-	if u.haveTtl() {
-		r.Ttl = uint32(res.ttl)
-	}
+	r.Ttl = 0
 
 	// Re-create the RRs
 	var h dns.RR_Header
