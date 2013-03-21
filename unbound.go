@@ -114,6 +114,7 @@ func errorString(i int) string {
 // unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
 // check if we have such a version
 func (u *Unbound) haveTtl() bool {
+	println(u.version[0], u.version[1], u.version[2])
 	if u.version[0] < 1 {
 		return false
 	}
@@ -221,6 +222,11 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Secure = res.secure == 1
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
+	println("TTL")
+	if u.haveTtl() {
+		println("SETTING TTL")
+		r.Ttl = int(res.ttl)
+	}
 
 	// Re-create the RRs
 	var h dns.RR_Header
@@ -350,7 +356,7 @@ func (u *Unbound) Version() (version [3]int) {
 	}
 	version[0], _ = strconv.Atoi(v[0])
 	version[1], _ = strconv.Atoi(v[1])
-	version[2], _ = strconv.Atoi(v[1])
+	version[2], _ = strconv.Atoi(v[2])
 	return
 }
 
