@@ -44,8 +44,8 @@ struct ub_result *new_ub_result() {
 	return r;
 }
 int    ub_ttl(struct ub_result *r) {
-	char *p;
-	p = (char*)r + sizeof(struct ub_result) - sizeof(int);
+	int *p;
+	p = (int*) (r + sizeof(r) - sizeof(int));
 	return (int)*p;
 }
 */
@@ -118,7 +118,7 @@ func errorString(i int) string {
 
 // unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
 // check if we have such a version
-func (u *Unbound) haveTtl() bool {
+func (u *Unbound) haveTtlFeature() bool {
 	if u.version[0] < 1 {
 		return false
 	}
@@ -226,7 +226,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Secure = res.secure == 1
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
-	if u.haveTtl() {
+	if u.haveTtlFeature() {
 		r.Ttl = uint32(C.ub_ttl(res))
 	}
 
