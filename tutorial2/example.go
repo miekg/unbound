@@ -22,7 +22,6 @@ func main() {
 		fmt.Printf("error %s\n", err.Error())
 		os.Exit(1)
 	}
-
 	r, err := u.Resolve("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET)
 	if err != nil {
 		fmt.Printf("error %s\n", err.Error())
