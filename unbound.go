@@ -43,6 +43,11 @@ struct ub_result *new_ub_result() {
 	r = calloc(sizeof(struct ub_result), 1);
 	return r;
 }
+int    ub_ttl(struct ub_result *r) {
+	char *p;
+	p = (char*)r + sizeof(struct ub_result) - sizeof(int);
+	return (int)*p;
+}
 */
 import "C"
 
@@ -222,7 +227,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
 	if u.haveTtl() {
-		r.Ttl = uint32(res.ttl)
+		r.Ttl = uint32(C.ub_ttl(res))
 	}
 
 	// Re-create the RRs
@@ -356,4 +361,3 @@ func (u *Unbound) Version() (version [3]int) {
 	version[2], _ = strconv.Atoi(v[2])
 	return
 }
-
