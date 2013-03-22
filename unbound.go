@@ -34,6 +34,7 @@ package unbound
 #include <stdlib.h>
 #include <stdio.h>
 #include <unbound.h>
+#define offsetof(type, member)  __builtin_offsetof (type, member)
 
 int    array_elem_int(int *l, int i)    { return l[i]; }
 char * array_elem_char(char **l, int i) { if (l == NULL) return NULL; return l[i]; }
@@ -45,7 +46,8 @@ struct ub_result *new_ub_result() {
 }
 int    ub_ttl(struct ub_result *r) {
 	int *p;
-	p = (int*) ((unsigned char*)r + sizeof(*r) - 2*sizeof(int));
+	// Go to why_bogus add the pointer and then we will find the ttl, hopefully.
+	p = (int*) ((char*)r + offsetof(struct ub_result, why_bogus) + sizeof(char*));
 	return (int)*p;
 }
 */
