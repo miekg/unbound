@@ -45,7 +45,7 @@ struct ub_result *new_ub_result() {
 }
 int    ub_ttl(struct ub_result *r) {
 	int *p;
-	p = (int*) ((unsigned char*)r + sizeof(*r) - sizeof(int));
+	p = (int*) ((unsigned char*)r + sizeof(*r) - 2*sizeof(int));
 	return (int)*p;
 }
 */
