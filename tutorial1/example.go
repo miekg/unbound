@@ -13,9 +13,11 @@ func main() {
 	defer u.Destroy()
 
 	u.ResolvConf("/etc/resolv.conf")
-	r, err := u.LookupHost("www.nlnetlabs.nl")
+	a, err := u.LookupHost("www.nlnetlabs.nl")
 	if err != nil {
 		log.Fatalf("error %s\n", err.Error())
 	}
-	fmt.Printf("%+v\n", r)
+	for _, a1 := range a {
+		fmt.Printf("The address is %s\n", a1)
+	}
 }
