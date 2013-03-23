@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
-	"os"
+	"log"
 )
 
 // This is called when resolution is completed.
@@ -29,13 +29,11 @@ func main() {
 	done := make(chan *unbound.ResultError)
 
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
-		fmt.Printf("error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error %s\n", err.Error())
 	}
 
 	if err := u.Hosts("/etc/hosts"); err != nil {
-		fmt.Printf("error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error %s\n", err.Error())
 	}
 
 	u.ResolveAsync("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET, done)
