@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
-	"os"
+	"log"
 )
 
 // Examine the result structure in detail
@@ -62,27 +62,23 @@ func examineResult(query string, r *unbound.Result) {
 func main() {
 	flag.Parse()
 	if len(flag.Args()) != 1 {
-		fmt.Println("usage: <hostname>")
-		os.Exit(1)
+		log.Fatal("usage: <hostname>")
 	}
 
 	u := unbound.New()
 	defer u.Destroy()
 
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
-		fmt.Printf("error reading resolv.conf %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error reading resolv.conf %s\n", err.Error())
 	}
 
 	if err := u.Hosts("/etc/hosts"); err != nil {
-		fmt.Printf("error reading hosts: %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error reading hosts: %s\n", err.Error())
 	}
 
 	r, err := u.Resolve(flag.Arg(0), dns.TypeA, dns.ClassINET)
 	if err != nil {
-		fmt.Printf("resolve error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("resolve error %s\n", err.Error())
 	}
 	examineResult(flag.Arg(0), r)
 }
