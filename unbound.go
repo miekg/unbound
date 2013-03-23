@@ -148,7 +148,7 @@ func (u *Unbound) Destroy() {
 
 // ResolvConf wraps Unbound's ub_ctx_resolvconf.
 func (u *Unbound) ResolvConf(fname string) error {
-	cfname := C.CString(fname)
+	cfname := C.CString(dns.Fqdn(fname))
 	defer C.free(unsafe.Pointer(cfname))
 	i := C.ub_ctx_resolvconf(u.ctx, cfname)
 	return newError(int(i))

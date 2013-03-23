@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
 	"log"
 )
@@ -12,12 +13,10 @@ func main() {
 	u := unbound.New()
 	defer u.Destroy()
 
-	addr, err := u.LookupHost("wwww.nlnetlabs.nl")
+	u.ResolvConf("/etc/resolv.conf")
+	r, err := u.Resolve("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET)
 	if err != nil {
 		log.Fatalf("error %s\n", err.Error())
 	}
-
-	for _, a := range addr {
-		fmt.Printf("The address is %s\n", a)
-	}
+	fmt.Printf("%+v\n", r)
 }

@@ -56,6 +56,7 @@ func (u *Unbound) LookupIP(host string) (addrs []net.IP, err error) {
 	u.ResolveAsync(host, dns.TypeA, dns.ClassINET, c)
 	u.ResolveAsync(host, dns.TypeAAAA, dns.ClassINET, c)
 	seen := 0
+	println("BOE1")
 Wait:
 	for {
 		select {
