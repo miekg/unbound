@@ -1,8 +1,8 @@
 package unbound
 
 import (
-	"github.com/miekg/dns"
 	"fmt"
+	"github.com/miekg/dns"
 	"testing"
 )
 
@@ -78,7 +78,7 @@ func TestUnicodeLookupHost(t *testing.T) {
 }
 
 func TestUnicodeResolve(t *testing.T) {
-	u  := New()
+	u := New()
 	defer u.Destroy()
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
 		return
@@ -88,7 +88,7 @@ func TestUnicodeResolve(t *testing.T) {
 		t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
 		t.Fail()
 	}
-	if ! r.HaveData {
+	if !r.HaveData {
 		t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
 		t.Fail()
 	}

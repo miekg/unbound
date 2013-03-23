@@ -9,7 +9,7 @@ import (
 // They are adapted to the package unbound and the package dns.
 
 // LookupAddr performs a reverse lookup for the given address, returning a
-// list of names mapping to that address. 
+// list of names mapping to that address.
 func (u *Unbound) LookupAddr(addr string) (name []string, err error) {
 	reverse, err := dns.ReverseAddr(addr)
 	if err != nil {
@@ -95,7 +95,7 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.MX, err error) {
 // LookupSRV tries to resolve an SRV query of the given service, protocol,
 // and domain name. The proto is "tcp" or "udp". The returned records are
 // sorted by priority and randomized by weight within a priority.
-// 
+//
 // LookupSRV constructs the DNS name to look up following RFC 2782. That
 // is, it looks up _service._proto.name. To accommodate services publishing
 // SRV records under non-standard names, if both service and proto are

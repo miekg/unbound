@@ -63,7 +63,7 @@ import (
 )
 
 type Unbound struct {
-	ctx *C.struct_ctx
+	ctx     *C.struct_ctx
 	version [3]int
 }
 
@@ -273,8 +273,8 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 func (u *Unbound) ResolveAsync(name string, rrtype, rrclass uint16, c chan *ResultError) {
 	go func() {
 		r, e := u.Resolve(name, rrtype, rrclass)
-			c <- &ResultError{r, e}
-		}()
+		c <- &ResultError{r, e}
+	}()
 	return
 }
 
