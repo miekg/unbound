@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
-	"os"
+	"log"
 )
 
 func main() {
@@ -14,18 +14,15 @@ func main() {
 	defer u.Destroy()
 
 	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
-		fmt.Printf("error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error %s\n", err.Error())
 	}
 
 	if err := u.Hosts("/etc/hosts"); err != nil {
-		fmt.Printf("error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error %s\n", err.Error())
 	}
 	r, err := u.Resolve("www.nlnetlabs.nl.", dns.TypeA, dns.ClassINET)
 	if err != nil {
-		fmt.Printf("error %s\n", err.Error())
-		os.Exit(1)
+		log.Fatalf("error %s\n", err.Error())
 	}
 	fmt.Printf("%+v\n", r)
 }
