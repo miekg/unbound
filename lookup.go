@@ -92,6 +92,18 @@ func (u *Unbound) LookupMX(name string) (mx []*dns.MX, err error) {
 	return
 }
 
+// LookupNS returns the DNS NS records for the given domain name.
+func (u *Unbound) LookupNS(name string) (ns []*dns.NS, err error) {
+	r, err := u.Resolve(name, dns.TypeNS, dns.ClassINET)
+	if err != nil {
+		return nil, err
+	}
+	for _, rr := range r.Rr {
+		ns = append(ns, rr.(*dns.NS))
+	}
+	return
+}
+
 // LookupSRV tries to resolve an SRV query of the given service, protocol,
 // and domain name. The proto is "tcp" or "udp". The returned records are
 // sorted by priority and randomized by weight within a priority.
