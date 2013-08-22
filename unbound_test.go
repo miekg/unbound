@@ -109,7 +109,7 @@ func testStress(t *testing.T) {
 	for i := 0; i < max; i++ {
 		go func() {
 			for i := 0; i < 1000; i++ {
-				r, err := u.Resolve("www.google.com", dns.TypeA, dns.ClassINET)
+				r, err := u.Resolve("www.google.com.", dns.TypeA, dns.ClassINET)
 				if err != nil {
 					t.Log("failure to resolve google")
 					continue
