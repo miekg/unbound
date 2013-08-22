@@ -3,6 +3,8 @@ package unbound
 import (
 	"fmt"
 	"github.com/miekg/dns"
+	"runtime"
+	"sync"
 	"testing"
 )
 
@@ -92,4 +94,34 @@ func TestUnicodeResolve(t *testing.T) {
 		t.Log("Failure to get the A for ☁→❄→☃→☀→☺→☂→☹→✝.ws.")
 		t.Fail()
 	}
+}
+
+func testStress(t *testing.T) {
+	max := 8
+	procs := runtime.GOMAXPROCS(max)
+	wg := new(sync.WaitGroup)
+	wg.Add(max)
+	u := New()
+	defer u.Destroy()
+	if err := u.ResolvConf("/etc/resolv.conf"); err != nil {
+		return
+	}
+	for i := 0; i < max; i++ {
+		go func() {
+			for i := 0; i < 1000; i++ {
+				r, err := u.Resolve("www.google.com", dns.TypeA, dns.ClassINET)
+				if err != nil {
+					t.Log("failure to resolve google")
+					continue
+				}
+				if !r.HaveData {
+					t.Log("no data when resolving google")
+					continue
+				}
+			}
+			wg.Done()
+		}()
+	}
+	wg.Wait()
+	runtime.GOMAXPROCS(procs)
 }
