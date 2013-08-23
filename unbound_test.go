@@ -97,6 +97,8 @@ func TestUnicodeResolve(t *testing.T) {
 }
 
 func testStress(t *testing.T) {
+	domains := []string{"www.google.com.", "www.isc.org.", "www.outlook.com.", "nu.nl."}
+
 	max := 8
 	procs := runtime.GOMAXPROCS(max)
 	wg := new(sync.WaitGroup)
@@ -109,7 +111,7 @@ func testStress(t *testing.T) {
 	for i := 0; i < max; i++ {
 		go func() {
 			for i := 0; i < 1000; i++ {
-				r, err := u.Resolve("www.google.com.", dns.TypeA, dns.ClassINET)
+				r, err := u.Resolve(domains[dns.Id() % 4], dns.TypeA, dns.ClassINET)
 				if err != nil {
 					t.Log("failure to resolve google")
 					continue
