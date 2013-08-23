@@ -96,9 +96,9 @@ func TestUnicodeResolve(t *testing.T) {
 	}
 }
 
-func testStress(t *testing.T) {
-	domains := []string{"www.google.com.", "www.isc.org.", "www.outlook.com.", "nu.nl."}
-
+func TestStress(t *testing.T) {
+	domains := []string{"www.google.com.", "www.isc.org.", "www.outlook.com.", "miek.nl.", "doesnotexist.miek.nl."}
+	l := len(domains)
 	max := 8
 	procs := runtime.GOMAXPROCS(max)
 	wg := new(sync.WaitGroup)
@@ -111,13 +111,14 @@ func testStress(t *testing.T) {
 	for i := 0; i < max; i++ {
 		go func() {
 			for i := 0; i < 1000; i++ {
-				r, err := u.Resolve(domains[dns.Id() % 4], dns.TypeA, dns.ClassINET)
+				d := domains[int(dns.Id()) % l]
+				r, err := u.Resolve(d, dns.TypeA, dns.ClassINET)
 				if err != nil {
-					t.Log("failure to resolve google")
+					t.Log("failure to resolve: " + d)
 					continue
 				}
-				if !r.HaveData {
-					t.Log("no data when resolving google")
+				if !r.HaveData && d != "doesnotexist.miek.nl." {
+					t.Log("no data when resolving: " + d)
 					continue
 				}
 			}
