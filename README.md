@@ -6,3 +6,5 @@ Unbound's `ub_result` has been extended with an slice of dns.RRs, this alleviate
 the need to parse `ub_result.data` yourself.
 
 The website for Unbound is https://unbound.net/, were you can find further documentation.
+
+Tested/compiled to work for versions: 1.4.19, 1.4.20, 1.4.21.
