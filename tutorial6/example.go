@@ -21,11 +21,11 @@ func main() {
 		log.Fatalf("error %s\n", err.Error())
 	}
 
-	if err := u.AddTaFile("skydns.keys"); err != nil {
+	if err := u.AddTaFile("keys"); err != nil {
 		log.Fatalf("error %s\n", err.Error())
 	}
 
-	r, err := u.Resolve("server2.miek.skydns.dnssex.nl.", dns.TypeA, dns.ClassINET)
+	r, err := u.Resolve("nlnetlabs.nl.", dns.TypeA, dns.ClassINET)
 	if err != nil {
 		log.Fatalf("error %s\n", err.Error())
 	}
