@@ -63,7 +63,7 @@ import (
 )
 
 type Unbound struct {
-	ctx     *C.struct_ctx
+	ctx     *C.struct_ub_ctx
 	version [3]int
 }
 
