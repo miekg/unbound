@@ -121,16 +121,15 @@ func errorString(i int) string {
 // unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
 // check if we have such a version
 func (u *Unbound) haveTtlFeature() bool {
-	if u.version[0] < 1 {
-		return false
-	}
-	if u.version[1] < 4 {
-		return false
-	}
-	if u.version[2] < 20 {
-		return false
-	}
-	return true
+    if u.version[0] < 1 {
+        return false
+    } else if u.version[0] == 1 && u.version[1] < 4 {
+        return false
+    } else if u.version[0] == 1 && u.version[1] == 4 && u.version[2] <= 20 {
+        return false
+    } else {
+        return true
+    }
 }
 
 // New wraps Unbound's ub_ctx_create.
