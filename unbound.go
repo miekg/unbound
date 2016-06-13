@@ -55,6 +55,7 @@ import "C"
 
 import (
 	"github.com/miekg/dns"
+	"encoding/binary"
 	"os"
 	"strconv"
 	"strings"
@@ -244,12 +245,23 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 		r.Rr = make([]dns.RR, 0)
 		b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 		for len(b) != 0 {
-			// Create the RR
+			// Create the RR; write out the header details and
+            // the rdata to a buffer, and unpack it again into an
+            // actual RR
 			h.Rdlength = uint16(len(b))
-			msg := make([]byte, 20+len(h.Name)) // Long enough
-			off, _ := dns.PackStruct(&h, msg, 0)
-			msg = msg[:off]
+
+			msg := make([]byte, len(h.Name) + 11)
+			off, _ := dns.PackDomainName(h.Name, msg, 0, nil, false)
+			binary.BigEndian.PutUint16(msg[off:], h.Rrtype)
+			off += 2
+			binary.BigEndian.PutUint16(msg[off:], h.Class)
+			off += 2
+			binary.BigEndian.PutUint32(msg[off:], h.Ttl)
+			off += 4
+			binary.BigEndian.PutUint16(msg[off:], h.Rdlength)
+			off += 2
 			rrbuf := append(msg, b...)
+
 			rr, _, err := dns.UnpackRR(rrbuf, 0)
 			if err == nil {
 				r.Rr = append(r.Rr, rr)
