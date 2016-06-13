@@ -248,23 +248,23 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
         // Create the RR; write out the header details and
         // the rdata to a buffer, and unpack it again into an
         // actual RR, for ever rr found by resolve
-        hdr_buf := make([]byte, len(h.Name) + 11)
-        off, _ := dns.PackDomainName(h.Name, hdr_buf, 0, nil, false)
-        binary.BigEndian.PutUint16(hdr_buf[off:], h.Rrtype)
+        hdrBuf := make([]byte, len(h.Name) + 11)
+        off, _ := dns.PackDomainName(h.Name, hdrBuf, 0, nil, false)
+        binary.BigEndian.PutUint16(hdrBuf[off:], h.Rrtype)
         off += 2
-        binary.BigEndian.PutUint16(hdr_buf[off:], h.Class)
+        binary.BigEndian.PutUint16(hdrBuf[off:], h.Class)
         off += 2
-        binary.BigEndian.PutUint32(hdr_buf[off:], h.Ttl)
+        binary.BigEndian.PutUint32(hdrBuf[off:], h.Ttl)
         off += 4
 
 		for len(b) != 0 {
 			h.Rdlength = uint16(len(b))
             // Note: we are rewriting the rdata len so we do not
             // increase off anymore.
-            binary.BigEndian.PutUint16(hdr_buf[off:], h.Rdlength)
-            rrbuf := append(hdr_buf, b...)
+            binary.BigEndian.PutUint16(hdrBuf[off:], h.Rdlength)
+            rrBuf := append(hdrBuf, b...)
 
-			rr, _, err := dns.UnpackRR(rrbuf, 0)
+			rr, _, err := dns.UnpackRR(rrBuf, 0)
 			if err == nil {
 				r.Rr = append(r.Rr, rr)
 			}
