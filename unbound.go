@@ -54,8 +54,8 @@ int    ub_ttl(struct ub_result *r) {
 import "C"
 
 import (
-	"github.com/miekg/dns"
 	"encoding/binary"
+	"github.com/miekg/dns"
 	"os"
 	"strconv"
 	"strings"
@@ -252,7 +252,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 		// Create the RR; write out the header details and
 		// the rdata to a buffer, and unpack it again into an
 		// actual RR, for ever rr found by resolve
-		hdrBuf := make([]byte, len(h.Name) + 11)
+		hdrBuf := make([]byte, len(h.Name)+11)
 		off, _ := dns.PackDomainName(h.Name, hdrBuf, 0, nil, false)
 		binary.BigEndian.PutUint16(hdrBuf[off:], h.Rrtype)
 		off += 2
