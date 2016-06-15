@@ -206,12 +206,16 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	defer C.free(unsafe.Pointer(cname))
 	res := C.new_ub_result()
 	r := new(Result)
-	defer C.ub_resolve_free(res)
+	// Normally, we would call 'defer C.ub_resolve_free(res)' here, but
+	// that does not work (in Go 1.6.1), see
+	// https://github.com/miekg/unbound/issues/8
+	// This is likely related to https://github.com/golang/go/issues/15921
 	t := time.Now()
 	i := C.ub_resolve(u.ctx, cname, C.int(rrtype), C.int(rrclass), &res)
 	r.Rtt = time.Since(t)
 	err := newError(int(i))
 	if err != nil {
+		C.ub_resolve_free(res)
 		return nil, err
 	}
 
@@ -274,6 +278,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 			b = C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 		}
 	}
+	C.ub_resolve_free(res)
 	return r, err
 }
 
