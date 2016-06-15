@@ -1,9 +1,10 @@
 package unbound
 
 import (
-	"github.com/miekg/dns"
 	"math/rand"
 	"sort"
+
+	"github.com/miekg/dns"
 )
 
 // AddTaRR calls AddTa, but allows to directly use an dns.RR.

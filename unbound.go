@@ -55,12 +55,13 @@ import "C"
 
 import (
 	"encoding/binary"
-	"github.com/miekg/dns"
 	"os"
 	"strconv"
 	"strings"
 	"time"
 	"unsafe"
+
+	"github.com/miekg/dns"
 )
 
 type Unbound struct {

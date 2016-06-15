@@ -5,9 +5,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
+
 	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
-	"log"
 )
 
 // Examine the result structure in detail

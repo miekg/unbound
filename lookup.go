@@ -1,8 +1,9 @@
 package unbound
 
 import (
-	"github.com/miekg/dns"
 	"net"
+
+	"github.com/miekg/dns"
 )
 
 // These are function are a re-implementation of the net.Lookup* ones

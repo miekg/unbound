@@ -2,10 +2,11 @@ package unbound
 
 import (
 	"fmt"
-	"github.com/miekg/dns"
 	"runtime"
 	"sync"
 	"testing"
+
+	"github.com/miekg/dns"
 )
 
 func ExampleLookupCNAME() {
@@ -111,7 +112,7 @@ func TestStress(t *testing.T) {
 	for i := 0; i < max; i++ {
 		go func() {
 			for i := 0; i < 100; i++ {
-				d := domains[int(dns.Id()) % l]
+				d := domains[int(dns.Id())%l]
 				r, err := u.Resolve(d, dns.TypeA, dns.ClassINET)
 				if err != nil {
 					t.Log("failure to resolve: " + d)

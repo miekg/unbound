@@ -4,8 +4,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/miekg/unbound"
 	"log"
+
+	"github.com/miekg/unbound"
 )
 
 func main() {

@@ -4,9 +4,10 @@ package main
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/miekg/dns"
 	"github.com/miekg/unbound"
-	"log"
 )
 
 func main() {
