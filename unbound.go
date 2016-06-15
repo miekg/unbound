@@ -122,15 +122,15 @@ func errorString(i int) string {
 // unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
 // check if we have such a version
 func (u *Unbound) haveTtlFeature() bool {
-    if u.version[0] < 1 {
-        return false
-    } else if u.version[0] == 1 && u.version[1] < 4 {
-        return false
-    } else if u.version[0] == 1 && u.version[1] == 4 && u.version[2] <= 20 {
-        return false
-    } else {
-        return true
-    }
+	if u.version[0] < 1 {
+		return false
+	} else if u.version[0] == 1 && u.version[1] < 4 {
+		return false
+	} else if u.version[0] == 1 && u.version[1] == 4 && u.version[2] <= 20 {
+		return false
+	} else {
+		return true
+	}
 }
 
 // New wraps Unbound's ub_ctx_create.
@@ -249,24 +249,24 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 		r.Rr = make([]dns.RR, 0)
 		b := C.GoBytes(unsafe.Pointer(C.array_elem_char(res.data, C.int(j))), C.array_elem_int(res.len, C.int(j)))
 
-        // Create the RR; write out the header details and
-        // the rdata to a buffer, and unpack it again into an
-        // actual RR, for ever rr found by resolve
-        hdrBuf := make([]byte, len(h.Name) + 11)
-        off, _ := dns.PackDomainName(h.Name, hdrBuf, 0, nil, false)
-        binary.BigEndian.PutUint16(hdrBuf[off:], h.Rrtype)
-        off += 2
-        binary.BigEndian.PutUint16(hdrBuf[off:], h.Class)
-        off += 2
-        binary.BigEndian.PutUint32(hdrBuf[off:], h.Ttl)
-        off += 4
+		// Create the RR; write out the header details and
+		// the rdata to a buffer, and unpack it again into an
+		// actual RR, for ever rr found by resolve
+		hdrBuf := make([]byte, len(h.Name) + 11)
+		off, _ := dns.PackDomainName(h.Name, hdrBuf, 0, nil, false)
+		binary.BigEndian.PutUint16(hdrBuf[off:], h.Rrtype)
+		off += 2
+		binary.BigEndian.PutUint16(hdrBuf[off:], h.Class)
+		off += 2
+		binary.BigEndian.PutUint32(hdrBuf[off:], h.Ttl)
+		off += 4
 
 		for len(b) != 0 {
 			h.Rdlength = uint16(len(b))
-            // Note: we are rewriting the rdata len so we do not
-            // increase off anymore.
-            binary.BigEndian.PutUint16(hdrBuf[off:], h.Rdlength)
-            rrBuf := append(hdrBuf, b...)
+			// Note: we are rewriting the rdata len so we do not
+			// increase off anymore.
+			binary.BigEndian.PutUint16(hdrBuf[off:], h.Rdlength)
+			rrBuf := append(hdrBuf, b...)
 
 			rr, _, err := dns.UnpackRR(rrBuf, 0)
 			if err == nil {
