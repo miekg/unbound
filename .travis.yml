@@ -1,0 +1,8 @@
+language: go
+go:
+  - 1.5
+  - 1.6
+before_script:
+   sudo apt-get install libunbound-dev
+script:
+  - go test -race -v -bench=. ./...
