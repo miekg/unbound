@@ -34,7 +34,10 @@ package unbound
 #include <stdlib.h>
 #include <stdio.h>
 #include <unbound.h>
+
+#ifndef offsetof
 #define offsetof(type, member)  __builtin_offsetof (type, member)
+#endif
 
 int    array_elem_int(int *l, int i)    { return l[i]; }
 char * array_elem_char(char **l, int i) { if (l == NULL) return NULL; return l[i]; }
