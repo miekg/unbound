@@ -67,12 +67,13 @@ import (
 	"github.com/miekg/dns"
 )
 
+// Unbound wraps the C structures and performs the resolving of names.
 type Unbound struct {
 	ctx     *C.struct_ub_ctx
 	version [3]int
 }
 
-// Results is Unbound's ub_result adapted for Go.
+// Result is Unbound's ub_result adapted for Go.
 type Result struct {
 	Qname        string        // Text string, original question
 	Qtype        uint16        // Type code asked for
@@ -91,9 +92,9 @@ type Result struct {
 	Rtt          time.Duration // Time the query took (not in Unbound)
 }
 
-// UnboundError is an error returned from Unbound, it wraps both the
+// Error is an error returned from Unbound, it wraps both the
 // return code and the error string as returned by ub_strerror.
-type UnboundError struct {
+type Error struct {
 	Err  string
 	code int
 }
@@ -105,7 +106,7 @@ type ResultError struct {
 	Error error
 }
 
-func (e *UnboundError) Error() string {
+func (e *Error) Error() string {
 	return e.Err
 }
 
@@ -113,7 +114,7 @@ func newError(i int) error {
 	if i == 0 {
 		return nil
 	}
-	e := new(UnboundError)
+	e := new(Error)
 	e.Err = errorString(i)
 	e.code = i
 	return e
@@ -125,7 +126,7 @@ func errorString(i int) string {
 
 // unbound version from 1.4.20 (inclusive) and above fill in the Tll in the result
 // check if we have such a version
-func (u *Unbound) haveTtlFeature() bool {
+func (u *Unbound) haveTTLFeature() bool {
 	if u.version[0] < 1 {
 		return false
 	} else if u.version[0] == 1 && u.version[1] < 4 {
@@ -236,7 +237,7 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Secure = res.secure == 1
 	r.Bogus = res.bogus == 1
 	r.WhyBogus = C.GoString(res.why_bogus)
-	if u.haveTtlFeature() {
+	if u.haveTTLFeature() {
 		r.Ttl = uint32(C.ub_ttl(res))
 	}
 
@@ -323,20 +324,20 @@ func (u *Unbound) TrustedKeys(fname string) error {
 }
 
 // ZoneAdd wraps Unbound's ub_ctx_zone_add.
-func (u *Unbound) ZoneAdd(zone_name, zone_type string) error {
-	czone_name := C.CString(zone_name)
-	defer C.free(unsafe.Pointer(czone_name))
-	czone_type := C.CString(zone_type)
-	defer C.free(unsafe.Pointer(czone_type))
-	i := C.ub_ctx_zone_add(u.ctx, czone_name, czone_type)
+func (u *Unbound) ZoneAdd(zoneName, zoneType string) error {
+	czoneName := C.CString(zoneName)
+	defer C.free(unsafe.Pointer(czoneName))
+	czoneType := C.CString(zoneType)
+	defer C.free(unsafe.Pointer(czoneType))
+	i := C.ub_ctx_zone_add(u.ctx, czoneName, czoneType)
 	return newError(int(i))
 }
 
 // ZoneRemove wraps Unbound's ub_ctx_zone_remove.
-func (u *Unbound) ZoneRemove(zone_name string) error {
-	czone_name := C.CString(zone_name)
-	defer C.free(unsafe.Pointer(czone_name))
-	i := C.ub_ctx_zone_remove(u.ctx, czone_name)
+func (u *Unbound) ZoneRemove(zoneName string) error {
+	czoneName := C.CString(zoneName)
+	defer C.free(unsafe.Pointer(czoneName))
+	i := C.ub_ctx_zone_remove(u.ctx, czoneName)
 	return newError(int(i))
 }
 
