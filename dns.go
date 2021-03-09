@@ -19,16 +19,16 @@ func (u *Unbound) DataAddRR(data dns.RR) error { return u.DataAdd(data.String())
 // This method is not found in Unbound.
 func (u *Unbound) DataRemoveRR(data dns.RR) error { return u.DataRemove(data.String()) }
 
-// Copied from the standard library
+// Copied from the Go standard library
 
 // byPriorityWeight sorts SRV records by ascending priority and weight.
 type byPriorityWeight []*dns.SRV
 
-func (s byPriorityWeight) Len() int      { return len(s) }
-func (s byPriorityWeight) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
-func (s byPriorityWeight) Less(i, j int) bool {
-	return s[i].Priority < s[j].Priority ||
-		(s[i].Priority == s[j].Priority && s[i].Weight < s[j].Weight)
+func (addrs byPriorityWeight) Len() int      { return len(addrs) }
+func (addrs byPriorityWeight) Swap(i, j int) { addrs[i], addrs[j] = addrs[j], addrs[i] }
+func (addrs byPriorityWeight) Less(i, j int) bool {
+	return addrs[i].Priority < addrs[j].Priority ||
+		(addrs[i].Priority == addrs[j].Priority && addrs[i].Weight < addrs[j].Weight)
 }
 
 // shuffleByWeight shuffles SRV records by weight using the algorithm
