@@ -232,6 +232,9 @@ func (u *Unbound) Resolve(name string, rrtype, rrclass uint16) (*Result, error) 
 	r.Rcode = int(res.rcode)
 	r.AnswerPacket = new(dns.Msg)
 	r.AnswerPacket.Unpack(C.GoBytes(res.answer_packet, res.answer_len)) // Should always work
+	// no matter what, overwrite and potentially set the question section
+	r.AnswerPacket.Question = []dns.Question{{Name: r.Qname, Qtype: r.Qtype, Qclass: r.Qclass}}
+
 	r.HaveData = res.havedata == 1
 	r.NxDomain = res.nxdomain == 1
 	r.Secure = res.secure == 1
