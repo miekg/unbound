@@ -1,6 +1,6 @@
 package main
 
-// https://www.unbound.net/documentation/libunbound-tutorial-6.html
+// https://unbound.docs.nlnetlabs.nl/en/latest/developer/libunbound-tutorial/dnssec-validate.html
 
 import (
 	"fmt"
