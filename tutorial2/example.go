@@ -1,6 +1,6 @@
 package main
 
-// https://www.unbound.net/documentation/libunbound-tutorial-2.html
+// https://unbound.docs.nlnetlabs.nl/en/latest/developer/libunbound-tutorial/setup-context.html
 
 import (
 	"fmt"
