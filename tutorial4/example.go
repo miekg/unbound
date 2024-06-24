@@ -1,6 +1,6 @@
 package main
 
-// https://www.unbound.net/documentation/libunbound-tutorial-4.html
+// https://unbound.docs.nlnetlabs.nl/en/latest/developer/libunbound-tutorial/async-lookup.html
 
 import (
 	"fmt"
